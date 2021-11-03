@@ -1,0 +1,17 @@
+Package: HydroPortailStats
+Type: Package
+Title: HydroPortail statistical functions - Fonctions statistiques de l'HydroPortail
+Version: 1.0.0
+Authors@R: person("Benjamin", "Renard", email = "benjamin.renard@inrae.fr",
+    role = c("aut", "cre"))
+Description: Statistical functions used in the French HydroPortail (https://www.hydroportail.developpement-durable.gouv.fr/).
+    This includes functions to estimate distributions, quantile curves and uncertainties, along with various other utilities.
+License: GPL-3 + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Depends:
+RoxygenNote: 7.1.0
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
