@@ -1,4 +1,4 @@
-# --------------------------
+#****************************
 # HydRoStat v1.0
 # Copyright 2017 Irstea, IDDN.FR.001.460013.000.S.C.2017.000.20700
 # Author: Benjamin Renard
@@ -16,7 +16,7 @@
 # A copy of the GNU General Public License is provided within this 
 # distribution.
 # See also <https://www.gnu.org/licenses/>.
-# --------------------------
+#****************************
 
 #~******************************************************************************
 #~* OBJET: Librairie de distributions & outils de base associés
@@ -42,6 +42,16 @@
 #~* COMMENTAIRES: XXX
 #~******************************************************************************
 
+#' Number of parameters.
+#'
+#' Returns the number of parameters of a distribution.
+#'
+#' @param dist character, distribution name
+#' @return An integer.
+#' @examples
+#' GetParNumber('Normal')
+#' GetParNumber('GEV')
+#' @export
 GetParNumber<-function(dist){
   #^******************************************************************************
   #^* OBJET: Retourne le nombre de paramètres de la distribution dist 
@@ -81,6 +91,19 @@ GetParNumber<-function(dist){
               NA)
   return(Npar)}
 
+#' Parameter names.
+#'
+#' Returns the names of the parameters of a distribution, 
+#' in French (default) or English.
+#'
+#' @param dist character, distribution name
+#' @param lang character, language ('en' or 'fr')
+#' @return A character vector.
+#' @examples
+#' GetParName('Normal')
+#' GetParName('GEV')
+#' GetParName('GEV',lang='en')
+#' @export
 GetParName<-function(dist,lang='fr'){
   #^******************************************************************************
   #^* OBJET: Retourne le nom des paramètres de la distribution dist 
@@ -121,6 +144,20 @@ GetParName<-function(dist,lang='fr'){
               NA)
   return(name)}
 
+#' Parameter feasibility
+#'
+#' Evaluates whether a parameter vector is feasible 
+#' (for instance, are scale parameters >0 ?)
+#'
+#' @param dist character, distribution name
+#' @param par numeric vector, parameter vector
+#' @return A logical.
+#' @examples
+#' # Feasible
+#' GetParFeas('Normal',c(0,1))
+#' # Not feasible because second parameter (standard deviation) is negative
+#' GetParFeas('Normal',c(0,-1))
+#' @export
 GetParFeas<-function(dist,par){
   #^******************************************************************************
   #^* OBJET: Retourne la faisabilité du paramètre 'par' de la distribution 'dist'  
@@ -164,6 +201,23 @@ GetParFeas<-function(dist,par){
               NA)
   return(feas)}
 
+#' Probability Density Function (pdf)
+#'
+#' Evaluates the pdf of a distribution
+#'
+#' @param y numeric, value at which the pdf is evaluated
+#' @param dist character, distribution name
+#' @param par numeric vector, parameter vector
+#' @param log logical, returns log-pdf if TRUE
+#' @return The pdf or the log-pdf as a numeric.
+#' @examples
+#' GetPdf(0,'Normal',c(0,1))
+#' GetPdf(200,'GEV',c(100,25,-0.2))
+#' GetPdf(200,'GEV',c(100,25,0.2))
+#' GetPdf(3,'Poisson',0.75)
+#' @import stats
+#' @import evd
+#' @export
 GetPdf<-function(y,dist,par,log=F){
   #^******************************************************************************
   #^* OBJET: Retourne la densité de probabilité de la distribution 'dist' de  
@@ -218,6 +272,20 @@ GetPdf<-function(y,dist,par,log=F){
              NA)
   return(pdf)}
 
+#' Cumulative Distribution Function (cdf)
+#'
+#' Evaluates the cdf of a distribution
+#'
+#' @param y numeric, value at which the cdf is evaluated
+#' @param dist character, distribution name
+#' @param par numeric vector, parameter vector
+#' @return The cdf as a numeric.
+#' @examples
+#' GetCdf(0,'Normal',c(0,1))
+#' GetCdf(200,'GEV',c(100,25,-0.2))
+#' GetCdf(200,'GEV',c(100,25,0.2))
+#' GetCdf(3,'Poisson',0.75)
+#' @export
 GetCdf<-function(y,dist,par){
   #^******************************************************************************
   #^* OBJET: Retourne la fonction de répartition de la distribution 'dist' de  
@@ -265,6 +333,20 @@ GetCdf<-function(y,dist,par){
              NA)
   return(cdf)}
 
+#' Quantile Function
+#'
+#' Evaluates the quantiles of a distribution
+#'
+#' @param p numeric in (0;1), nonexceedance probability
+#' @param dist character, distribution name
+#' @param par numeric vector, parameter vector
+#' @return The p-quantile as a numeric.
+#' @examples
+#' GetQuantile(0.99,'Normal',c(0,1))
+#' GetQuantile(0.99,'GEV',c(100,25,-0.2))
+#' GetQuantile(0.99,'GEV',c(100,25,0.2))
+#' GetQuantile(0.99,'Poisson',0.75)
+#' @export
 GetQuantile<-function(p,dist,par){
   #^******************************************************************************
   #^* OBJET: Retourne le p-quantile de la distribution 'dist' de paramètres 'par'  
@@ -312,6 +394,20 @@ GetQuantile<-function(p,dist,par){
            NA)
   return(q)}
 
+#' Random numbers generator
+#'
+#' Generate random realizations from a distribution
+#'
+#' @param dist character, distribution name
+#' @param par numeric vector, parameter vector
+#' @param n integer, number of values to generate
+#' @return The generated values as a numeric vector.
+#' @examples
+#' Generate('Normal',c(0,1),10)
+#' Generate('GEV',c(100,25,-0.2),10)
+#' Generate('GEV',c(100,25,0.2),10)
+#' Generate('Poisson',0.75,10)
+#' @export
 Generate<-function(dist,par,n=1){
   #^******************************************************************************
   #^* OBJET: simule une réalisation de la distribution "dist" de paramètres "par"  
