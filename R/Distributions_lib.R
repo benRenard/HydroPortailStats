@@ -215,8 +215,8 @@ GetParFeas<-function(dist,par){
 #' GetPdf(200,'GEV',c(100,25,-0.2))
 #' GetPdf(200,'GEV',c(100,25,0.2))
 #' GetPdf(3,'Poisson',0.75)
-#' @import stats
-#' @import evd
+#' @importFrom stats dunif dnorm dlnorm dexp dgamma dpois
+#' @importFrom evd dgev dgpd dgumbel
 #' @export
 GetPdf<-function(y,dist,par,log=F){
   #^******************************************************************************
@@ -248,27 +248,27 @@ GetPdf<-function(y,dist,par,log=F){
   
   pdf=switch(dist,
              FlatPrior=1,
-             Uniform=dunif(y,min=par[1],max=par[2],log=log),
-             Normal=dnorm(y,mean=par[1],sd=par[2],log=log),
-             LogNormal=dlnorm(y,meanlog=par[1],sdlog=par[2],log=log),
-             Gumbel=dgumbel(y,loc=par[1],scale=par[2],log=log),
-             Exponential1=dexp(y,rate=1/par[1],log=log), 
-             Exponential2=dexp(y-par[1],rate=1/par[2],log=log), 
-             GEV=dgev(y,loc=par[1],scale=par[2],shape=-1*par[3],log=log),
+             Uniform=stats::dunif(y,min=par[1],max=par[2],log=log),
+             Normal=stats::dnorm(y,mean=par[1],sd=par[2],log=log),
+             LogNormal=stats::dlnorm(y,meanlog=par[1],sdlog=par[2],log=log),
+             Gumbel=evd::dgumbel(y,loc=par[1],scale=par[2],log=log),
+             Exponential1=stats::dexp(y,rate=1/par[1],log=log), 
+             Exponential2=stats::dexp(y-par[1],rate=1/par[2],log=log), 
+             GEV=evd::dgev(y,loc=par[1],scale=par[2],shape=-1*par[3],log=log),
              GPD2={if(y==0){ if(log==F) {1/par[1]} else {-log(par[1])}
-             } else {dgpd(y,loc=0,scale=par[1],shape=-1*par[2],log=log)}}, 
+             } else {evd::dgpd(y,loc=0,scale=par[1],shape=-1*par[2],log=log)}}, 
              GPD3={if(y==par[1]){if(log==F) {1/par[2]} else {-log(par[2])}
-             } else {dgpd(y,loc=par[1],scale=par[2],shape=-1*par[3],log=log)}}, 
-             Poisson=dpois(y,lambda=par[1],log=log),
-             PearsonIII={ if(par[2]>0){dgamma(y-par[1],shape=par[3],scale=par[2],log=log)
-             } else {dgamma(par[1]-y,shape=par[3],scale=-1*par[2],log=log)}},
-             LogPearsonIII={ if(par[2]>0){fy=dgamma(log(y)-par[1],shape=par[3],scale=par[2],log=T)-log(y)
-             } else {fy=dgamma(par[1]-log(y),shape=par[3],scale=-1*par[2],log=T)-log(y)}
+             } else {evd::dgpd(y,loc=par[1],scale=par[2],shape=-1*par[3],log=log)}}, 
+             Poisson=stats::dpois(y,lambda=par[1],log=log),
+             PearsonIII={ if(par[2]>0){stats::dgamma(y-par[1],shape=par[3],scale=par[2],log=log)
+             } else {stats::dgamma(par[1]-y,shape=par[3],scale=-1*par[2],log=log)}},
+             LogPearsonIII={ if(par[2]>0){fy=stats::dgamma(log(y)-par[1],shape=par[3],scale=par[2],log=T)-log(y)
+             } else {fy=stats::dgamma(par[1]-log(y),shape=par[3],scale=-1*par[2],log=T)-log(y)}
              if(log==T) {fy
              } else {exp(fy)}},
-             Gumbel_min=dgumbel(-1*y,loc=-1*par[1],scale=par[2],log=log),
-             GEV_min=dgev(-1*y,loc=-1*par[1],scale=par[2],shape=-1*par[3],log=log),
-             GEV_min_pos=dgev(-1*y,loc=-1*par[1],scale=par[2],shape=-1*par[2]/par[1],log=log),
+             Gumbel_min=evd::dgumbel(-1*y,loc=-1*par[1],scale=par[2],log=log),
+             GEV_min=evd::dgev(-1*y,loc=-1*par[1],scale=par[2],shape=-1*par[3],log=log),
+             GEV_min_pos=evd::dgev(-1*y,loc=-1*par[1],scale=par[2],shape=-1*par[2]/par[1],log=log),
              NA)
   return(pdf)}
 
@@ -285,6 +285,8 @@ GetPdf<-function(y,dist,par,log=F){
 #' GetCdf(200,'GEV',c(100,25,-0.2))
 #' GetCdf(200,'GEV',c(100,25,0.2))
 #' GetCdf(3,'Poisson',0.75)
+#' @importFrom stats punif pnorm plnorm pexp pgamma ppois
+#' @importFrom evd pgev pgpd pgumbel
 #' @export
 GetCdf<-function(y,dist,par){
   #^******************************************************************************
@@ -313,23 +315,23 @@ GetCdf<-function(y,dist,par){
   if(!GetParFeas(dist,par)){return(NA)}
   
   cdf=switch(dist,
-             Uniform=punif(y,min=par[1],max=par[2]),
-             Normal=pnorm(y,mean=par[1],sd=par[2]),
-             LogNormal=plnorm(y,meanlog=par[1],sdlog=par[2]),
-             Gumbel=pgumbel(y,loc=par[1],scale=par[2]),
-             Exponential1=pexp(y,rate=1/par[1]), 
-             Exponential2=pexp(y-par[1],rate=1/par[2]), 
-             GEV=pgev(y,loc=par[1],scale=par[2],shape=-1*par[3]),
-             GPD2=pgpd(y,loc=0,scale=par[1],shape=-1*par[2]), 
-             GPD3=pgpd(y,loc=par[1],scale=par[2],shape=-1*par[3]), 
-             Poisson=ppois(y,lambda=par[1]),
-             PearsonIII={ if(par[2]>0){pgamma(y-par[1],shape=par[3],scale=par[2])
-             } else {1-pgamma(par[1]-y,shape=par[3],scale=-1*par[2])}},
-             LogPearsonIII={ if(par[2]>0){pgamma(log(y)-par[1],shape=par[3],scale=par[2])
-             } else {1-pgamma(par[1]-log(y),shape=par[3],scale=-1*par[2])}},
-             Gumbel_min=1-pgumbel(-1*y,loc=-1*par[1],scale=par[2]),
-             GEV_min=1-pgev(-1*y,loc=-1*par[1],scale=par[2],shape=-1*par[3]),
-             GEV_min_pos=1-pgev(-1*y,loc=-1*par[1],scale=par[2],shape=-1*par[2]/par[1]),
+             Uniform=stats::punif(y,min=par[1],max=par[2]),
+             Normal=stats::pnorm(y,mean=par[1],sd=par[2]),
+             LogNormal=stats::plnorm(y,meanlog=par[1],sdlog=par[2]),
+             Gumbel=evd::pgumbel(y,loc=par[1],scale=par[2]),
+             Exponential1=stats::pexp(y,rate=1/par[1]), 
+             Exponential2=stats::pexp(y-par[1],rate=1/par[2]), 
+             GEV=evd::pgev(y,loc=par[1],scale=par[2],shape=-1*par[3]),
+             GPD2=evd::pgpd(y,loc=0,scale=par[1],shape=-1*par[2]), 
+             GPD3=evd::pgpd(y,loc=par[1],scale=par[2],shape=-1*par[3]), 
+             Poisson=stats::ppois(y,lambda=par[1]),
+             PearsonIII={ if(par[2]>0){stats::pgamma(y-par[1],shape=par[3],scale=par[2])
+             } else {1-stats::pgamma(par[1]-y,shape=par[3],scale=-1*par[2])}},
+             LogPearsonIII={ if(par[2]>0){stats::pgamma(log(y)-par[1],shape=par[3],scale=par[2])
+             } else {1-stats::pgamma(par[1]-log(y),shape=par[3],scale=-1*par[2])}},
+             Gumbel_min=1-evd::pgumbel(-1*y,loc=-1*par[1],scale=par[2]),
+             GEV_min=1-evd::pgev(-1*y,loc=-1*par[1],scale=par[2],shape=-1*par[3]),
+             GEV_min_pos=1-evd::pgev(-1*y,loc=-1*par[1],scale=par[2],shape=-1*par[2]/par[1]),
              NA)
   return(cdf)}
 
@@ -346,6 +348,8 @@ GetCdf<-function(y,dist,par){
 #' GetQuantile(0.99,'GEV',c(100,25,-0.2))
 #' GetQuantile(0.99,'GEV',c(100,25,0.2))
 #' GetQuantile(0.99,'Poisson',0.75)
+#' @importFrom stats qunif qnorm qlnorm qexp qgamma qpois
+#' @importFrom evd qgev qgpd qgumbel
 #' @export
 GetQuantile<-function(p,dist,par){
   #^******************************************************************************
@@ -374,23 +378,23 @@ GetQuantile<-function(p,dist,par){
   if(!GetParFeas(dist,par) | p<0 | p>1){return(NA)}
   if(p==0) {return(-Inf)} else if(p==1) {return(Inf)}
   q=switch(dist,
-           Uniform=qunif(p,min=par[1],max=par[2]),
-           Normal=qnorm(p,mean=par[1],sd=par[2]),
-           LogNormal=qlnorm(p,meanlog=par[1],sdlog=par[2]),
-           Gumbel=qgumbel(p,loc=par[1],scale=par[2]),
-           Exponential1=qexp(p,rate=1/par[1]), 
-           Exponential2=par[1]+qexp(p,rate=1/par[2]), 
-           GEV=qgev(p,loc=par[1],scale=par[2],shape=-1*par[3]),
-           GPD2=qgpd(p,loc=0,scale=par[1],shape=-1*par[2]), 
-           GPD3=qgpd(p,loc=par[1],scale=par[2],shape=-1*par[3]), 
-           Poisson=qpois(p,lambda=par[1]),
-           PearsonIII={ if(par[2]>0){par[1]+qgamma(p,shape=par[3],scale=par[2])
-           } else {par[1]-qgamma(1-p,shape=par[3],scale=-1*par[2])}},
-           LogPearsonIII={ if(par[2]>0){exp(par[1]+qgamma(p,shape=par[3],scale=par[2]))
-           } else {exp(par[1]-qgamma(1-p,shape=par[3],scale=-1*par[2]))}},
-           Gumbel_min=-1*qgumbel(1-p,loc=-1*par[1],scale=par[2]),
-           GEV_min=-1*qgev(1-p,loc=-1*par[1],scale=par[2],shape=-1*par[3]),
-           GEV_min_pos=-1*qgev(1-p,loc=-1*par[1],scale=par[2],shape=-1*par[2]/par[1]),
+           Uniform=stats::qunif(p,min=par[1],max=par[2]),
+           Normal=stats::qnorm(p,mean=par[1],sd=par[2]),
+           LogNormal=stats::qlnorm(p,meanlog=par[1],sdlog=par[2]),
+           Gumbel=evd::qgumbel(p,loc=par[1],scale=par[2]),
+           Exponential1=stats::qexp(p,rate=1/par[1]), 
+           Exponential2=par[1]+stats::qexp(p,rate=1/par[2]), 
+           GEV=evd::qgev(p,loc=par[1],scale=par[2],shape=-1*par[3]),
+           GPD2=evd::qgpd(p,loc=0,scale=par[1],shape=-1*par[2]), 
+           GPD3=evd::qgpd(p,loc=par[1],scale=par[2],shape=-1*par[3]), 
+           Poisson=stats::qpois(p,lambda=par[1]),
+           PearsonIII={ if(par[2]>0){par[1]+stats::qgamma(p,shape=par[3],scale=par[2])
+           } else {par[1]-stats::qgamma(1-p,shape=par[3],scale=-1*par[2])}},
+           LogPearsonIII={ if(par[2]>0){exp(par[1]+stats::qgamma(p,shape=par[3],scale=par[2]))
+           } else {exp(par[1]-stats::qgamma(1-p,shape=par[3],scale=-1*par[2]))}},
+           Gumbel_min=-1*evd::qgumbel(1-p,loc=-1*par[1],scale=par[2]),
+           GEV_min=-1*evd::qgev(1-p,loc=-1*par[1],scale=par[2],shape=-1*par[3]),
+           GEV_min_pos=-1*evd::qgev(1-p,loc=-1*par[1],scale=par[2],shape=-1*par[2]/par[1]),
            NA)
   return(q)}
 
@@ -407,6 +411,8 @@ GetQuantile<-function(p,dist,par){
 #' Generate('GEV',c(100,25,-0.2),10)
 #' Generate('GEV',c(100,25,0.2),10)
 #' Generate('Poisson',0.75,10)
+#' @importFrom stats runif rnorm rlnorm rexp rgamma rpois
+#' @importFrom evd rgev rgpd rgumbel
 #' @export
 Generate<-function(dist,par,n=1){
   #^******************************************************************************
@@ -432,26 +438,42 @@ Generate<-function(dist,par,n=1){
   
   if(!GetParFeas(dist,par)){return(NA)}
   r=switch(dist,
-           Uniform=runif(n,min=par[1],max=par[2]),
-           Normal=rnorm(n,mean=par[1],sd=par[2]),
-           LogNormal=rlnorm(n,meanlog=par[1],sdlog=par[2]),
-           Gumbel=rgumbel(n,loc=par[1],scale=par[2]),
-           Exponential1=rexp(n,rate=1/par[1]), 
-           Exponential2=par[1]+rexp(n,rate=1/par[2]), 
-           GEV=rgev(n,loc=par[1],scale=par[2],shape=-1*par[3]),
-           GPD2=rgpd(n,loc=0,scale=par[1],shape=-1*par[2]), 
-           GPD3=rgpd(n,loc=par[1],scale=par[2],shape=-1*par[3]), 
-           Poisson=rpois(n,lambda=par[1]),
-           PearsonIII={ if(par[2]>0){par[1]+rgamma(n,shape=par[3],scale=par[2])
-           } else {par[1]-rgamma(n,shape=par[3],scale=-1*par[2])}},
-           LogPearsonIII={ if(par[2]>0){exp(par[1]+rgamma(n,shape=par[3],scale=par[2]))
-           } else {exp(par[1]-rgamma(n,shape=par[3],scale=-1*par[2]))}},
-           Gumbel_min=-1*rgumbel(n,loc=-1*par[1],scale=par[2]),
-           GEV_min=-1*rgev(n,loc=-1*par[1],scale=par[2],shape=-1*par[3]),
-           GEV_min_pos=-1*rgev(n,loc=-1*par[1],scale=par[2],shape=-1*par[2]/par[1]),
+           Uniform=stats::runif(n,min=par[1],max=par[2]),
+           Normal=stats::rnorm(n,mean=par[1],sd=par[2]),
+           LogNormal=stats::rlnorm(n,meanlog=par[1],sdlog=par[2]),
+           Gumbel=evd::rgumbel(n,loc=par[1],scale=par[2]),
+           Exponential1=stats::rexp(n,rate=1/par[1]), 
+           Exponential2=par[1]+stats::rexp(n,rate=1/par[2]), 
+           GEV=evd::rgev(n,loc=par[1],scale=par[2],shape=-1*par[3]),
+           GPD2=evd::rgpd(n,loc=0,scale=par[1],shape=-1*par[2]), 
+           GPD3=evd::rgpd(n,loc=par[1],scale=par[2],shape=-1*par[3]), 
+           Poisson=stats::rpois(n,lambda=par[1]),
+           PearsonIII={ if(par[2]>0){par[1]+stats::rgamma(n,shape=par[3],scale=par[2])
+           } else {par[1]-stats::rgamma(n,shape=par[3],scale=-1*par[2])}},
+           LogPearsonIII={ if(par[2]>0){exp(par[1]+stats::rgamma(n,shape=par[3],scale=par[2]))
+           } else {exp(par[1]-stats::rgamma(n,shape=par[3],scale=-1*par[2]))}},
+           Gumbel_min=-1*evd::rgumbel(n,loc=-1*par[1],scale=par[2]),
+           GEV_min=-1*evd::rgev(n,loc=-1*par[1],scale=par[2],shape=-1*par[3]),
+           GEV_min_pos=-1*evd::rgev(n,loc=-1*par[1],scale=par[2],shape=-1*par[2]/par[1]),
            NA)
   return(r)}
 
+#' Reduced variate
+#'
+#' Returns the 'reduced variate' that is used in some quantile plots 
+#' (see e.g. quantile curve on Gumbel paper)
+#'
+#' @param p numeric in (0;1), nonexceedance probability
+#' @param dist character, distribution name
+#' @return The reduced variate with nonexceedance probability p.
+#' @examples
+#' GetReducedVariate(0.99,'Normal')
+#' GetReducedVariate(0.99,'Gumbel')
+#' GetReducedVariate(0.99,'GEV')
+#' GetReducedVariate(0.99,'Poisson')
+#' @importFrom stats qunif qnorm qexp qgamma
+#' @importFrom evd qgumbel
+#' @export
 GetReducedVariate<-function(p,dist){
   #^******************************************************************************
   #^* OBJET: Retourne la variable réduite "canonique" pour la distribution 'dist'  
@@ -479,20 +501,20 @@ GetReducedVariate<-function(p,dist){
   if(is.na(p)) {return(NA)}
   if(p==0) {return(-Inf)} else if(p==1) {return(Inf)}
   q=switch(dist,
-           Uniform=qunif(p,min=0,max=1),
-           Normal=qnorm(p,mean=0,sd=1),
-           LogNormal=qnorm(p,mean=0,sd=1),
-           Gumbel=qgumbel(p,loc=0,scale=1),
-           Exponential1=qexp(p,rate=1), 
-           Exponential2=qexp(p,rate=1), 
-           GEV=qgumbel(p,loc=0,scale=1),
-           GPD2=qexp(p,rate=1), 
-           GPD3=qexp(p,rate=1), 
-           Poisson=qnorm(p,mean=0,sd=1),
-           PearsonIII=qgamma(p,shape=1,scale=1),
-           LogPearsonIII=qgamma(p,shape=1,scale=1),
-           Gumbel_min=-1*qgumbel(1-p,loc=0,scale=1),
-           GEV_min=-1*qgumbel(1-p,loc=0,scale=1),
-           GEV_min_pos=-1*qgumbel(1-p,loc=0,scale=1),
+           Uniform=stats::qunif(p,min=0,max=1),
+           Normal=stats::qnorm(p,mean=0,sd=1),
+           LogNormal=stats::qnorm(p,mean=0,sd=1),
+           Gumbel=evd::qgumbel(p,loc=0,scale=1),
+           Exponential1=stats::qexp(p,rate=1), 
+           Exponential2=stats::qexp(p,rate=1), 
+           GEV=evd::qgumbel(p,loc=0,scale=1),
+           GPD2=stats::qexp(p,rate=1), 
+           GPD3=stats::qexp(p,rate=1), 
+           Poisson=stats::qnorm(p,mean=0,sd=1),
+           PearsonIII=stats::qgamma(p,shape=1,scale=1),
+           LogPearsonIII=stats::qgamma(p,shape=1,scale=1),
+           Gumbel_min=-1*evd::qgumbel(1-p,loc=0,scale=1),
+           GEV_min=-1*evd::qgumbel(1-p,loc=0,scale=1),
+           GEV_min_pos=-1*evd::qgumbel(1-p,loc=0,scale=1),
            NA)
   return(q)}
