@@ -19,77 +19,82 @@
 #****************************
 
 #~******************************************************************************
-#~* OBJET: Outils pour le calcul de stat. descriptives (empiriques)
+#~* OBJET: Estimation comme dans HYDRO2
 #~******************************************************************************
 #~* PROGRAMMEUR: Benjamin Renard, Irstea Lyon
 #~******************************************************************************
 #~* CREE/MODIFIE: XXX
 #~******************************************************************************
 #~* PRINCIPALES FONCTIONS
-#~*    1. GetEmpFreq, calcul de la fréquence empirique au non-dépassement
-#~*    2. 
-#~*    3. 
-#~*    4. 
-#~*    5. 
-#~*    6. 
-#~*    7. 
-#~*    8. XXX
+#~*    1. GetEstimate_HYDRO2, estimateur des moments
 #~******************************************************************************
 #~* REF.: XXX
 #~******************************************************************************
 #~* A FAIRE: XXX
 #~******************************************************************************
-#~* COMMENTAIRES: XXX
+#~* COMMENTAIRES: 1/ Les seules distributions disponibles sont Normal, LogNormal, 
+#~*                  et Gumbel
 #~******************************************************************************
 
-#' Empirical nonexceedance frequency
+#****************************
+# Fonctions principales ----
+#****************************
+
+#' Hydro2 estimate of a distribution
 #'
-#' Computes the empirical nonexceedance frequency of the ith sorted value amongst n
+#' Returns an estimate of a distribution as it was computed in the old HYDRO2 software.
+#' Only available for distributions 'Normal', 'LogNormal', and 'Gumbel'.
 #'
-#' @param i integer or integer vector, observation rank(s)
-#' @param n integer, number of observations
-#' @param formula character, formula, available: 'Hazen', 'Standard', 'MinusOne', 'Weibull',
-#'     'Benard', 'Cunnane', 'Beard', 'Blom', 'Gringorten', 'Landwehr', 'Tukey'.
-#' @return The nonexceedance frequency.
+#' @param y numeric vector, data
+#' @param dist character, distribution name
+#' @return A list with the following components:
+#'     \item{par}{numeric vector, estimated parameter vector.}
+#'     \item{obj}{numeric, objective fonction (NA for this estimate)}
+#'     \item{ok}{logical, did computation succeed?}
+#'     \item{err}{integer, error code (0 if ok)}
+#'     \item{message}{error message}
 #' @examples
-#' GetEmpFreq(i=1:10,n=10)
-#' GetEmpFreq(i=1:10,n=10,formula='Standard')
-#' GetEmpFreq(i=1:10,n=10,formula='MinusOne')
-#' GetEmpFreq(i=1:10,n=10,formula='Cunnane')
+#' y=c(9.2,9.5,11.4,9.5,9.4,9.6,10.5,11.1,10.5,10.4)
+#' GetEstimate_HYDRO2(y,'Normal')
+#' GetEstimate_HYDRO2(y,'LogNormal')
+#' GetEstimate_HYDRO2(y,'Gumbel')
+#' GetEstimate_HYDRO2(y,'GEV')
+#' GetEstimate_HYDRO2(y,'Poisson')
 #' @export
-GetEmpFreq<-function(i,n,formula="Hazen"){
+GetEstimate_HYDRO2<-function(y,dist){
   #^******************************************************************************
-  #^* OBJET: Retourne la fréquence empirique au non-dépassement 
+  #^* OBJET: Retourne l'estimateur HYDRO2
   #^******************************************************************************
   #^* PROGRAMMEUR: Benjamin Renard, Irstea Lyon
   #^******************************************************************************
   #^* CREE/MODIFIE: XXX
   #^******************************************************************************
   #^* IN
-  #^*    1. [integer] i, rang 
-  #^*    2. [integer] n, taille de l'échantillon 
-  #^*    3. [character] formula, formule de calcul 
+  #^*    1. [real] y, vecteur des données 
+  #^*    2. [character] dist, nom de la distribution 
   #^* OUT
-  #^*    1. [real] fréquence empirique au non-dépassement  
+  #^*    1. [list] Une liste comprenant: 
+  #^*         $par: paramètres estimés
+  #^*         $obj: NA
+  #^*         $ok: T si ok, F si pb lors de l'optimisation
+  #^*         $err: code d'erreur (0 = pas d'erreur)
+  #^*         $message: message
   #^******************************************************************************
   #^* REF.: 
   #^******************************************************************************
   #^* A FAIRE: 
   #^******************************************************************************
   #^* COMMENTAIRES: 
-  #^******************************************************************************
-  f=switch(formula,
-           Hazen=(i-0.5)/n,
-           Standard=i/n,
-           MinusOne=(i-1)/n,
-           Weibull=i/(n+1),
-           Benard=(i-0.3)/(n+0.4),
-           Cunnane=(i-0.4)/(n+0.2),
-           Beard=(i-0.31)/(n+0.38),
-           Blom=(i-0.375)/(n+0.25),
-           Gringorten=(i-0.44)/(n+0.12),
-           Landwehr=(i-0.35)/n,
-           Tukey=(3*i-1)/(3*n+1),
-           NA)
-  return(f)
+  #^******************************************************************************  
+  
+  out=switch(dist,
+             # Normal distribution
+             Normal={ReturnEstimate(rough_Normal(y))},
+             # LogNormal distribution
+             LogNormal={ReturnEstimate(rough_Normal(log(y)))},   
+              # Gumbel
+             Gumbel={ReturnEstimate(rough_Gumbel(y))},
+            {w=Estimate_fail;w$message="fatal:distribution non disponible avec HYDRO2";w}
+  )
+  return(out)
 }

@@ -18,7 +18,7 @@ GetEmpFreq(i, n, formula = "Hazen")
 The nonexceedance frequency.
 }
 \description{
-Computes the empirical nonexceedance frequency of the ith value (sorted) amongst n
+Computes the empirical nonexceedance frequency of the ith sorted value amongst n
 }
 \examples{
 GetEmpFreq(i=1:10,n=10)
