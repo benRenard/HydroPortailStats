@@ -2,6 +2,7 @@
 
 export(Generate)
 export(GetCdf)
+export(GetEmpFreq)
 export(GetParFeas)
 export(GetParName)
 export(GetParNumber)
