@@ -78,7 +78,9 @@ mcmcoptions_def=list(mult=0.1,eps=0.1,batch.length=100,batch.n=100,
 #' (parameter estimates, quantile curves, etc.)
 #'
 #' @param y numeric vector, data.
-#' @param dist character, distribution name. See dataset distInfo for available distributions and information regarding their parameterization.
+#' @param dist character, distribution name. See dataset distInfo for a description of available distributions.
+#'     In particular, type names(distInfo) for the list of available distributions, and 
+#'     distInfo[['GEV']] for more information on a particular distribution (here, GEV).
 #' @param Emeth character, estimation method. Default is 'LMOM' (L-Moments), available: 
 #'     'MOM' (Moments), 'ML' (Maximum Likelihood), 'BAY' (Bayesian).
 #' @param Umeth character, uncertainty quantification method. Default is 'PBOOT' (Parametric bootstrap), available: 

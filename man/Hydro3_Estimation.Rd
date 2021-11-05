@@ -20,7 +20,9 @@ Hydro3_Estimation(
 \arguments{
 \item{y}{numeric vector, data.}
 
-\item{dist}{character, distribution name. See dataset distInfo for available distributions and information regarding their parameterization.}
+\item{dist}{character, distribution name. See dataset distInfo for a description of available distributions.
+In particular, type names(distInfo) for the list of available distributions, and 
+distInfo[['GEV']] for more information on a particular distribution (here, GEV).}
 
 \item{Emeth}{character, estimation method. Default is 'LMOM' (L-Moments), available: 
 'MOM' (Moments), 'ML' (Maximum Likelihood), 'BAY' (Bayesian).}

@@ -9,7 +9,11 @@ Description: Statistical functions used in the French HydroPortail (https://www.
 License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LazyData: true
-Depends:stats,
+Depends:
+    R (>= 3.5.0)
+Imports:
+    stats,
+    graphics,
 	evd,
     mvtnorm,
     numDeriv
