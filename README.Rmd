@@ -16,7 +16,8 @@ This R package contains the statistical functions used in the French [HydroPorta
 *Ce package R contient les fonctions statistiques utilisées par l'[HydroPortail](https://www.hydroportail.developpement-durable.gouv.fr/). Ceci inclut des fonctions pour estimer les paramètres d'une distribution, calculer les courbes de quantiles et leur incertitude, et d'autres outils variés.*
 
 ```{r}
-library(HydroPortailStats)
+#devtools::install_github('benRenard/HydroPortailStats') # install the package from GitHub
+library(HydroPortailStats) # load the package
 ```
 
 **Important warning**: many distributions are available in `HydroPortailStats`, but for some of them the parameterization may differ from the one used in e.g. Wikipedia or other R packages. The dataset `distInfo` provides information on the distributions as they are used in `HydroPortailStats`: it is highly advised to read this information before using a distribution. Try the following:

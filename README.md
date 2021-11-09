@@ -12,10 +12,12 @@ uncertainties, along with various other utilities.
 l’[HydroPortail](https://www.hydroportail.developpement-durable.gouv.fr/).
 Ceci inclut des fonctions pour estimer les paramètres d’une
 distribution, calculer les courbes de quantiles et leur incertitude, et
-d’autres outils variés.*
+d’autres outils
+variés.*
 
 ``` r
-library(HydroPortailStats)
+#devtools::install_github('benRenard/HydroPortailStats') # install the package from GitHub
+library(HydroPortailStats) # load the package
 ```
 
 **Important warning**: many distributions are available in
