@@ -1,0 +1,139 @@
+---
+title: "Comment interpréter le résultat d'un test statistique?"
+subtitle: "Test de tendance"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE,warning=FALSE,message=FALSE,dev='svg')
+keyword='tendance'
+library(ggplot2);library(gridExtra);library(HydroPortailStats)
+pCol='#FFA73C' # color for points
+obsCol='#BA292E' # color for observations-related elements
+repCol='#2E3D7C' # color for replcations-related elements
+n=50 # sample size
+nrep=10000 # number of replications
+fig.size=2 # size for 1 panel
+```
+
+```{r define, include=FALSE}
+set.seed(3) # for repeatability
+data1=rnorm(n) # stationary
+data2=rnorm(n)+1*((1:n)-0.5*n)/n # with trend
+
+myTheme <- function(bothAxesBlank=FALSE){
+  out=theme_bw()+theme(panel.grid=element_blank(),title=element_text(size=10),
+                       axis.text.y=element_blank(),axis.ticks.y=element_blank(),
+                       plot.margin=unit(0.1*c(1,1,1,1),"inches"))
+  if(bothAxesBlank) out=out+theme(axis.text.x=element_blank(),
+                                  axis.ticks.x=element_blank())
+  return(out)
+}
+
+colorize <- function(x, color) {
+  if (knitr::is_latex_output()) {
+    sprintf("\\textcolor{%s}{%s}", color, x)
+  } else if (knitr::is_html_output()) {
+    sprintf("<span style='color: %s;'>%s</span>", color, 
+      x)
+  } else x
+}
+
+onePanel <- function(y,lineCol=repCol,title=keyword,pointCol=pCol,doPlot=TRUE){
+  n=length(y)
+  DF=data.frame(index=1:n,valeur=y)
+  trend=lm(DF$valeur~DF$index)$coeff[2]
+  if(doPlot){
+    fullTitle=paste0(title,': ',round(trend,3))
+    g=ggplot(DF,aes(x=index,y=valeur))+geom_point(colour=pointCol)
+    g=g+geom_smooth(method='lm',se=FALSE,colour=lineCol)
+    g=g+xlim(1,n)+ylim(-3,3)+labs(title=fullTitle)
+    g=g+myTheme()
+  } else {g=NULL}
+  return(list(stat=trend,plot=g))
+}
+
+H0dist <- function(reps,obs,fill=repCol,lineCol=obsCol,bins=50){
+  # compute p-value
+  pval=mean(abs(reps)>abs(obs))
+  fullTitle=paste0('pval: ',round(pval,3))
+  # bin width and locations
+  bw=diff(range(reps))/bins
+  bloc=seq(min(reps),max(reps),bw)
+  # Round obs to nearest bin to avoid a "leaking" colored area
+  l1=bloc[which.min(abs(bloc-obs))]
+  l2=bloc[which.min(abs(bloc+obs))]
+  # define data frames
+  DF=data.frame(x=reps) # all reps
+  DF2=subset(DF,x>max(l1,l2)|x<min(l1,l2)) # colored subset 
+  g=ggplot(DF,aes(x))
+  g=g+geom_histogram(breaks=bloc,fill=fill)
+  g=g+geom_histogram(data=DF2,breaks=bloc,fill='white',alpha=0.4) 
+  g=g+geom_vline(xintercept=obs,colour=lineCol)
+  g=g+geom_vline(xintercept=-1*obs,colour=lineCol,linetype="dotted")
+  g=g+labs(x=keyword,y='fréquence',title=fullTitle)
+  g=g+myTheme()
+  return(g)
+}
+
+leg <- function(n=nrep,fill=repCol,lineCol=obsCol){
+  g=ggplot()
+  g=g+annotate('rect',xmin=-0.25,xmax=4.5,ymin=0.5,ymax=3.75,colour='black',fill=NA)
+  g=g+geom_polygon(data=data.frame(x=c(0,0.5,0.5,0),y=c(3.25,3.25,2.75,2.75)),aes(x,y),fill=fill)
+  g=g+annotate('text',x=1,y=3,label=paste0('histogramme des ',keyword,'s \ncalculées sur ',n,' réplications'),hjust=0)
+  g=g+geom_line(data=data.frame(x=c(0,0.5),y=c(1.75,1.75)),aes(x,y),colour=lineCol)
+  g=g+annotate('text',x=1,y=1.75,label=paste0(keyword,' observée'),hjust=0)
+  g=g+geom_line(data=data.frame(x=c(0,0.5),y=c(1,1)),aes(x,y),colour=lineCol,linetype="dotted")
+  g=g+annotate('text',x=1,y=1,label=paste0('-1 * ',keyword,' observée'),hjust=0)
+  g=g+xlim(-1,4.5)+ylim(-0.5,4.5)
+  g=g+theme_void()
+  return(g)
+}
+```
+
+Le principe d'un test statistique est similaire à celui d'un raisonnement par l'absurde. On commence par supposer qu'il n'existe aucun changement (hypothèse H0). Puis on va chercher si les données contredisent cette hypothèse. Pour cela, on va comparer **`r colorize("ce que l'on observe",obsCol)`** avec **`r colorize("ce à quoi on s'attend sous l'hypothèse H0",repCol)`**. 
+
+**`r colorize("Qu'on observe-t-on?",obsCol)`**: le caractère aléatoire des **`r colorize("données",pCol)`** observées conduit forcément à une tendance non nulle, et ce même si H0 était vraie. La question est de savoir à partir de quand cette tendance est trop grande pour etre réaliste sous l'hypothèse H0.
+
+
+```{r fig.height=fig.size,fig.width=fig.size}
+obs=onePanel(data1,lineCol=obsCol,title=paste(keyword,'obs.'))
+obs$plot
+```
+
+**`r colorize("A quoi s'attend-on sous l'hypothèse H0?",repCol)`**:
+Admettons que l'on sache simuler de nouveaux jeux de **`r colorize("données",pCol)`** similaires aux observations (même taille notamment), mais pour lesquels on puisse garantir qu'il n'y a aucun changement. Quelles tendances calculerait-t-on sur ces jeux de données?
+
+```{r fig.height=fig.size,fig.width=fig.size*5}
+g=vector(mode='list',length=5)
+for(i in 1:length(g)){
+  if(i==(length(g)-1)){
+    g[[i]]=ggplot(data.frame(x=-1:1,y=0),aes(x,y))+xlim(-3,3)+geom_point()+theme_void()
+  } else {
+    sim=onePanel(rnorm(n))
+    g[[i]]=sim$plot
+  }
+}
+grid.arrange(grobs=g,nrow=1)
+```
+
+On peut à présent comparer ce que l'on observe et ce à quoi on s'attend sous l'hypothèse H0. Ici, la `r colorize("tendance observée",obsCol)` est du même ordre que `r colorize("celles calculées sur les données simulées sous H0",repCol)`: intuitivement, il n'y a donc rien d'anormal à cette tendance, et il n'y a donc pas de raison de rejeter H0.
+
+On peut formaliser ce raisonnement de facon plus quantitative en calculant la probabilité, si l'hypothèse H0 est vraie, d'obtenir une tendance aussi forte (en valeur absolue) que celle observée. Cette probabilité s'appelle la **p-value** du test (notée pval) et correspond à l'aire representée en clair dans la figure ci-dessous. Lorsqu'elle est loin de zéro, comme ici, les données ne contredisent pas l'hypothèse H0, et on ne peut donc pas rejeter cette dernière. 
+
+```{r fig.height=fig.size,fig.width=fig.size*3}
+reps=rep(NA,nrep)
+for(i in 1:length(reps)){
+  reps[i]=onePanel(rnorm(n),doPlot=FALSE)$stat
+}
+g=list(H0dist(reps,obs$stat),leg())
+grid.arrange(grobs=g,layout_matrix=matrix(c(1,2,2),nrow=1))
+```
+
+Les figures ci-dessous illustrent le résultat du test pour des observations conduisant à une tendance plus forte: la p-value du test est à présent proche de zéro, indiquant que l'on peut rejeter l'hypothèse H0. On dit alors que le test est **significatif**.
+
+```{r fig.height=fig.size,fig.width=fig.size*2}
+obs=onePanel(data2,lineCol=obsCol,title=paste(keyword,'obs.'))
+g=list(obs$plot,H0dist(reps,obs$stat))
+grid.arrange(grobs=g,nrow=1)
+```
