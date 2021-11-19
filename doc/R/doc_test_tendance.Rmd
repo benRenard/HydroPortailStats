@@ -1,6 +1,6 @@
 ---
 title: "Comment interpréter le résultat d'un test statistique?"
-subtitle: "Test de tendance"
+subtitle: "Illustration avec un test de détection de tendance"
 output: html_document
 ---
 
@@ -119,7 +119,7 @@ grid.arrange(grobs=g,nrow=1)
 
 On peut à présent comparer ce que l'on observe et ce à quoi on s'attend sous l'hypothèse H0. Ici, la `r colorize("tendance observée",obsCol)` est du même ordre que `r colorize("celles calculées sur les données simulées sous H0",repCol)`: intuitivement, il n'y a donc rien d'anormal à cette tendance, et il n'y a donc pas de raison de rejeter H0.
 
-On peut formaliser ce raisonnement de facon plus quantitative en calculant la probabilité, si l'hypothèse H0 est vraie, d'obtenir une tendance aussi forte (en valeur absolue) que celle observée. Cette probabilité s'appelle la **p-value** du test (notée pval) et correspond à l'aire representée en clair dans la figure ci-dessous. Lorsqu'elle est loin de zéro, comme ici, les données ne contredisent pas l'hypothèse H0, et on ne peut donc pas rejeter cette dernière. 
+On peut formaliser ce raisonnement de facon plus quantitative en calculant la probabilité, si l'hypothèse H0 est vraie, d'obtenir une tendance au moins aussi forte (en valeur absolue) que celle observée. Cette probabilité s'appelle la **p-value** du test (notée pval) et correspond à l'aire representée en clair dans la figure ci-dessous. Lorsqu'elle est loin de zéro, comme ici, les données ne contredisent pas l'hypothèse H0, et on ne peut donc pas rejeter cette dernière. On dit que le test est **non significatif**, ou que la tendance observée est non significative.
 
 ```{r fig.height=fig.size,fig.width=fig.size*3}
 reps=rep(NA,nrep)
@@ -130,10 +130,12 @@ g=list(H0dist(reps,obs$stat),leg())
 grid.arrange(grobs=g,layout_matrix=matrix(c(1,2,2),nrow=1))
 ```
 
-Les figures ci-dessous illustrent le résultat du test pour des observations conduisant à une tendance plus forte: la p-value du test est à présent proche de zéro, indiquant que l'on peut rejeter l'hypothèse H0. On dit alors que le test est **significatif**.
+Les figures ci-dessous illustrent le résultat du test pour des observations conduisant à une tendance plus forte: la p-value du test est à présent proche de zéro, indiquant que l'on peut rejeter l'hypothèse H0. On dit alors que le test est **significatif**, et donc que la tendance observée est significative.
 
 ```{r fig.height=fig.size,fig.width=fig.size*2}
 obs=onePanel(data2,lineCol=obsCol,title=paste(keyword,'obs.'))
 g=list(obs$plot,H0dist(reps,obs$stat))
 grid.arrange(grobs=g,nrow=1)
 ```
+
+Le principe général décrit dans cette page s'applique à tous les tests statistiques. L'implémentation précise doit par contre être adaptée à l'objectif du test. Par exemple, pour un test de détection de rupture, on calculera des différences de moyenne avant/après rupture plutot que des tendances comme illustré ci-dessus. Pour un test d'adéquation à une distribution théorique, on calculera un indice quantifiant la différence entre les distributions théorique et empirique.
