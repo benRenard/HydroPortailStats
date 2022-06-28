@@ -9,6 +9,8 @@ knitr::opts_chunk$set(echo=TRUE,warning=FALSE,message=FALSE,fig.path = "man/read
 set.seed(654321)
 ```
 
+[![DOI](https://zenodo.org/badge/424274482.svg)](https://zenodo.org/badge/latestdoi/424274482)
+
 # Introduction
 
 This R package contains the statistical functions used in the French [HydroPortail](https://www.hydroportail.developpement-durable.gouv.fr/). This includes functions to estimate distributions, quantile curves and uncertainties, along with various other utilities.

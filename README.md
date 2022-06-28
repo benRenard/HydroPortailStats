@@ -1,6 +1,8 @@
 HydroPortailStats
 ================
 
+[![DOI](https://zenodo.org/badge/424274482.svg)](https://zenodo.org/badge/latestdoi/424274482)
+
 # Introduction
 
 This R package contains the statistical functions used in the French
@@ -12,8 +14,7 @@ uncertainties, along with various other utilities.
 l’[HydroPortail](https://www.hydroportail.developpement-durable.gouv.fr/).
 Ceci inclut des fonctions pour estimer les paramètres d’une
 distribution, calculer les courbes de quantiles et leur incertitude, et
-d’autres outils
-variés.*
+d’autres outils variés.*
 
 ``` r
 #devtools::install_github('benRenard/HydroPortailStats') # install the package from GitHub
@@ -111,8 +112,7 @@ short `h3` contains all the information displayed in the plot below.
 *La variable `h3` est une liste contenant tous les résultats de
 l’estimation. Une description détaillée est fournie dans l’aide
 (?Hydro3\_Estimation), mais pour résumer `h3` contient toutes les
-informations visibles dans le graphique
-ci-dessous.*
+informations visibles dans le graphique ci-dessous.*
 
 ``` r
  # Plot summarizing the results of Hydro3_Estimation / graphique résumant le résultat de Hydro3_Estimation
@@ -270,8 +270,7 @@ modified as shown below. Note the inversion of the quantile curve.
 *Lorsqu’on s’interesse aux extrêmes bas (basses eaux par exemple), les
 grandes périodes de retour sont associées aux petites valeurs\! Il faut
 alors modifier les options d’estimation par defaut comme illustré
-ci-dessous. Notez l’inversion de la courbe des
-quantiles.*
+ci-dessous. Notez l’inversion de la courbe des quantiles.*
 
 ``` r
 # Retrieve and copy default options / Recupérer et copier les options par defaut
@@ -358,8 +357,7 @@ modified ‘GEV\_min’ that is always strictly positive.
 *Une difficulté souvent rencontrée est que les quantiles de grande
 période de retour deviennent negatifs, ce qui est génant pour des
 débits. La distribution ‘GEV\_min\_pos’ est une ‘GEV\_min’ modifiée
-pour toujours rester strictement
-positive.*
+pour toujours rester strictement positive.*
 
 ``` r
 # Note that only 'ML' estimation is available for distribution 'GEV_min_pos' / Notez que seule la méthode 'ML' est disponible pour la distribution 'GEV_min_pos'
