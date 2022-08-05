@@ -98,7 +98,7 @@ Cette page décrit le principe et l'interprétation des tests statistiques. Un t
 
 Le principe d'un test statistique est similaire à celui d'un raisonnement par l'absurde. Pour un test de détection de tendance, on commence par supposer qu'il n'existe aucun changement (hypothèse H0). Puis on va chercher si les données contredisent cette hypothèse. Pour cela, on va comparer **`r colorize("ce que l'on observe",obsCol)`** avec **`r colorize("ce à quoi on s'attend sous l'hypothèse H0",repCol)`**. 
 
-**`r colorize("Qu'on observe-t-on?",obsCol)`**: le caractère aléatoire des **`r colorize("données",pCol)`** observées conduit forcément à une tendance non nulle, et ce même si H0 était vraie. La question est de savoir à partir de quand cette tendance est trop grande pour etre réaliste sous l'hypothèse H0.
+**`r colorize("Qu'observe-t-on?",obsCol)`**: le caractère aléatoire des **`r colorize("données",pCol)`** observées conduit forcément à une tendance non nulle, et ce même si H0 était vraie. La question est de savoir à partir de quand cette tendance est trop grande pour etre réaliste sous l'hypothèse H0.
 
 
 ```{r fig.height=fig.size,fig.width=fig.size}
