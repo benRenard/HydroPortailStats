@@ -44,8 +44,9 @@
 #' x0=c(0.5,2)
 #' sdjump=c(0.5,1)
 #' mcmc=Metropolis_OAAT_adaptive(f,x0,sdjump)
-#' par(mfrow=c(1,3))
+#' graphicalpar=par(mfrow=c(1,3))
 #' plot(mcmc$x);hist(mcmc$x[,1]); hist(mcmc$x[,2])
+#' par(graphicalpar)
 #' @export
 Metropolis_OAAT_adaptive<-function(f,x0,sdjump,...,
                                    batch.length=100,batch.n=100,
@@ -120,8 +121,9 @@ Metropolis_OAAT_adaptive<-function(f,x0,sdjump,...,
 #' x0=c(0.5,2)
 #' sdjump=c(0.5,1)
 #' mcmc=Metropolis_OAAT(f,x0,1000,sdjump)
-#' par(mfrow=c(1,3))
+#' graphicalpar=par(mfrow=c(1,3))
 #' plot(mcmc$x);hist(mcmc$x[,1]); hist(mcmc$x[,2])
+#' par(graphicalpar)
 #' @export
 Metropolis_OAAT<-function(f,x0,nsim,sdjump,...){
   #^******************************************************************************

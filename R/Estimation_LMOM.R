@@ -80,7 +80,7 @@ GetEstimate_LMOM<-function(y,dist){
   #^*    1. [list] Une liste comprenant: 
   #^*         $par: paramètres estimés
   #^*         $obj: NA
-  #^*         $ok: T si ok, F si pb
+  #^*         $ok: TRUE si ok, FALSE si pb
   #^*         $err: code d'erreur (0 = pas d'erreur)
   #^*         $message: message
   #^******************************************************************************

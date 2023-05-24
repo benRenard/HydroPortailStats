@@ -12,9 +12,9 @@ Hydro3_Estimation(
   options = options_def,
   mcmcoptions = mcmcoptions_def,
   prior = GetDefaultPrior(GetParNumber(dist)),
-  do.KS = T,
-  do.MK = T,
-  do.Pettitt = T
+  do.KS = TRUE,
+  do.MK = TRUE,
+  do.Pettitt = TRUE
 )
 }
 \arguments{

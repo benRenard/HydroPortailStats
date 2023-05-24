@@ -4,7 +4,7 @@
 \alias{GetPdf}
 \title{Probability Density Function (pdf)}
 \usage{
-GetPdf(y, dist, par, log = F)
+GetPdf(y, dist, par, log = FALSE)
 }
 \arguments{
 \item{y}{numeric, value at which the pdf is evaluated}

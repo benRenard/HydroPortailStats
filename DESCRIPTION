@@ -1,13 +1,13 @@
 Package: HydroPortailStats
 Type: Package
-Title: HydroPortail Statistical Functions
-Version: 1.0.2
+Title: 'HydroPortail' Statistical Functions
+Version: 1.0.3
 Authors@R: c(
     person("Benjamin", "Renard", email = "benjamin.renard@inrae.fr",role = c("aut", "cre","cph"),comment = c(ORCID = "0000-0001-8447-5430")),
     person("INRAE", role = c("fnd")),
     person("Ministère de la Transition Ecologique - SCHAPI", role = c("fnd")),
     person("European Commission", role = c("fnd"),comment = c("This project has received funding from the European Union’s Horizon 2020 research and innovation programme under the Marie Sklodowska-Curie grant agreement No 835496")))
-Description: Statistical functions used in the French HydroPortail <https://hydro.eaufrance.fr/>.
+Description: Statistical functions used in the French 'HydroPortail' <https://hydro.eaufrance.fr/>.
     This includes functions to estimate distributions, quantile curves and uncertainties, along with various other utilities.
     Technical details are available (in French) in Renard (2016) <https://hal.inrae.fr/hal-02605318>.
 License: GPL-3

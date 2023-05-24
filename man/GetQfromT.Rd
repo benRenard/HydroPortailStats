@@ -4,10 +4,10 @@
 \alias{GetQfromT}
 \title{Get quantile from return period}
 \usage{
-GetQfromT(T, H3, options = options_def)
+GetQfromT(RP, H3, options = options_def)
 }
 \arguments{
-\item{T}{numeric, return period}
+\item{RP}{numeric, return period}
 
 \item{H3}{list, resulting from a call to Hydro3_Estimation()}
 

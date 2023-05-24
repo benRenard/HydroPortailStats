@@ -61,7 +61,8 @@ prior3=list(dist='Normal',par=c(0,0.25))
 prior=list(prior1,prior2,prior3)
 par0=GetEstimate_ROUGH(y,'GEV')$par
 mcmc=GetEstimate_BAY(y,'GEV',prior,par0,batch.length=50,batch.n=50)
-par(mfrow=c(2,3))
+graphicalpar=par(mfrow=c(2,3))
 plot(mcmc$x[,1],type='l'); plot(mcmc$x[,2],type='l'); plot(mcmc$x[,3],type='l')
 hist(mcmc$x[,1]); hist(mcmc$x[,2]); hist(mcmc$x[,3])
+par(graphicalpar)
 }

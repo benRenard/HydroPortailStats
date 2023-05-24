@@ -15,7 +15,7 @@ GetTfromQ(q, H3, options = options_def)
 }
 \value{
 A list with the following components:
-    \item{T}{numeric, return period}
+    \item{RP}{numeric, return period}
     \item{IC}{numeric vector, uncertainty interval}
 }
 \description{

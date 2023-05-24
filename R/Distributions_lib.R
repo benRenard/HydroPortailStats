@@ -182,22 +182,22 @@ GetParFeas<-function(dist,par){
   if(!is.null(par)) {if(any(is.na(par))){return(NA)}}
   
   feas=switch(dist,
-              FlatPrior=T,
-              Uniform={if(par[2]<=par[1]){F} else {T}},
-              Normal={if(par[2]<=0){F} else {T}},
-              LogNormal={if(par[2]<=0){F} else {T}},
-              Gumbel={if(par[2]<=0){F} else {T}},
-              Exponential1={if(par[1]<=0){F} else {T}}, 
-              Exponential2={if(par[2]<=0){F} else {T}}, 
-              GEV={if(par[2]<=0){F} else {T}},
-              GPD2={if(par[1]<=0){F} else {T}}, 
-              GPD3={if(par[2]<=0){F} else {T}}, 
-              Poisson={if(par[1]<=0){F} else {T}},
-              PearsonIII={if( (par[2]==0) | (par[3]<=0) ){F} else {T}},
-              LogPearsonIII={if( (par[2]==0) | (par[3]<=0) ){F} else {T}},
-              Gumbel_min={if(par[2]<=0){F} else {T}},
-              GEV_min={if(par[2]<=0){F} else {T}},
-              GEV_min_pos={if( (par[1]<=0) | (par[2]<=0)){F} else {T}},
+              FlatPrior=TRUE,
+              Uniform={if(par[2]<=par[1]){FALSE} else {TRUE}},
+              Normal={if(par[2]<=0){FALSE} else {TRUE}},
+              LogNormal={if(par[2]<=0){FALSE} else {TRUE}},
+              Gumbel={if(par[2]<=0){FALSE} else {TRUE}},
+              Exponential1={if(par[1]<=0){FALSE} else {TRUE}}, 
+              Exponential2={if(par[2]<=0){FALSE} else {TRUE}}, 
+              GEV={if(par[2]<=0){FALSE} else {TRUE}},
+              GPD2={if(par[1]<=0){FALSE} else {TRUE}}, 
+              GPD3={if(par[2]<=0){FALSE} else {TRUE}}, 
+              Poisson={if(par[1]<=0){FALSE} else {TRUE}},
+              PearsonIII={if( (par[2]==0) | (par[3]<=0) ){FALSE} else {TRUE}},
+              LogPearsonIII={if( (par[2]==0) | (par[3]<=0) ){FALSE} else {TRUE}},
+              Gumbel_min={if(par[2]<=0){FALSE} else {TRUE}},
+              GEV_min={if(par[2]<=0){FALSE} else {TRUE}},
+              GEV_min_pos={if( (par[1]<=0) | (par[2]<=0)){FALSE} else {TRUE}},
               NA)
   return(feas)}
 
@@ -218,7 +218,7 @@ GetParFeas<-function(dist,par){
 #' @importFrom stats dunif dnorm dlnorm dexp dgamma dpois
 #' @importFrom evd dgev dgpd dgumbel
 #' @export
-GetPdf<-function(y,dist,par,log=F){
+GetPdf<-function(y,dist,par,log=FALSE){
   #^******************************************************************************
   #^* OBJET: Retourne la densité de probabilité de la distribution 'dist' de  
   #^*        paramètres 'par', évaluée en 'y'  
@@ -255,16 +255,16 @@ GetPdf<-function(y,dist,par,log=F){
              Exponential1=stats::dexp(y,rate=1/par[1],log=log), 
              Exponential2=stats::dexp(y-par[1],rate=1/par[2],log=log), 
              GEV=evd::dgev(y,loc=par[1],scale=par[2],shape=-1*par[3],log=log),
-             GPD2={if(y==0){ if(log==F) {1/par[1]} else {-log(par[1])}
+             GPD2={if(y==0){ if(log==FALSE) {1/par[1]} else {-log(par[1])}
              } else {evd::dgpd(y,loc=0,scale=par[1],shape=-1*par[2],log=log)}}, 
-             GPD3={if(y==par[1]){if(log==F) {1/par[2]} else {-log(par[2])}
+             GPD3={if(y==par[1]){if(log==FALSE) {1/par[2]} else {-log(par[2])}
              } else {evd::dgpd(y,loc=par[1],scale=par[2],shape=-1*par[3],log=log)}}, 
              Poisson=stats::dpois(y,lambda=par[1],log=log),
              PearsonIII={ if(par[2]>0){stats::dgamma(y-par[1],shape=par[3],scale=par[2],log=log)
              } else {stats::dgamma(par[1]-y,shape=par[3],scale=-1*par[2],log=log)}},
-             LogPearsonIII={ if(par[2]>0){fy=stats::dgamma(log(y)-par[1],shape=par[3],scale=par[2],log=T)-log(y)
-             } else {fy=stats::dgamma(par[1]-log(y),shape=par[3],scale=-1*par[2],log=T)-log(y)}
-             if(log==T) {fy
+             LogPearsonIII={ if(par[2]>0){fy=stats::dgamma(log(y)-par[1],shape=par[3],scale=par[2],log=TRUE)-log(y)
+             } else {fy=stats::dgamma(par[1]-log(y),shape=par[3],scale=-1*par[2],log=TRUE)-log(y)}
+             if(log==TRUE) {fy
              } else {exp(fy)}},
              Gumbel_min=evd::dgumbel(-1*y,loc=-1*par[1],scale=par[2],log=log),
              GEV_min=evd::dgev(-1*y,loc=-1*par[1],scale=par[2],shape=-1*par[3],log=log),

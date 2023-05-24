@@ -6,15 +6,14 @@ HydroPortailStats
 # Introduction
 
 This R package contains the statistical functions used in the French
-[HydroPortail](https://hydro.eaufrance.fr/). This includes functions to
-estimate distributions, quantile curves and uncertainties, along with
+[`HydroPortail`](https://hydro.eaufrance.fr/). This includes functions
+to estimate distributions, quantile curves and uncertainties, along with
 various other utilities.
 
 *Ce package R contient les fonctions statistiques utilisées par
-l’[HydroPortail](https://www.hydroportail.developpement-durable.gouv.fr/).
-Ceci inclut des fonctions pour estimer les paramètres d’une
-distribution, calculer les courbes de quantiles et leur incertitude, et
-d’autres outils variés.*
+l’[`HydroPortail`](https://hydro.eaufrance.fr/). Ceci inclut des
+fonctions pour estimer les paramètres d’une distribution, calculer les
+courbes de quantiles et leur incertitude, et d’autres outils variés.*
 
 ``` r
 install.packages('HydroPortailStats')  # Install the package from CRAN
@@ -93,12 +92,12 @@ plot(y,type='b')
 
 The main function of this package is `Hydro3_Estimation` (‘Hydro3’ is
 the name given to the current hydrometric data management system in
-France, which includes the HydroPortail). The line of code below
-performs estimation with default options (see ?Hydro3_Estimation)
+France, which includes `HydroPortail`). The line of code below performs
+estimation with default options (see ?Hydro3_Estimation)
 
 *La fonction principale de ce package est `Hydro3_Estimation` (‘Hydro3’
 est le nom de l’actuel système de gestion des données hydrométriques en
-France, dont fait partie l’HydroPortail). La ligne de code ci-dessous
+France, dont fait partie l’`HydroPortail`). La ligne de code ci-dessous
 effectue une estimation en utilisant les options par défaut (voir
 ?Hydro3_Estimation)*
 
@@ -134,7 +133,7 @@ intervalle d’incertitude.*
 
 ``` r
 # 100-year value / valeur centennale
-GetQfromT(T=100,H3=h3)
+GetQfromT(100,H3=h3)
 ```
 
     ## $q
@@ -145,10 +144,10 @@ GetQfromT(T=100,H3=h3)
 
 ``` r
 # Return period of value 250 / période de retour de la valeur 250
-GetTfromQ(q=250,H3=h3)
+GetTfromQ(250,H3=h3)
 ```
 
-    ## $T
+    ## $RP
     ## [1] 8.486092
     ## 
     ## $IC

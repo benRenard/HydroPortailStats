@@ -76,7 +76,7 @@ GetEstimate_HYDRO2<-function(y,dist){
   #^*    1. [list] Une liste comprenant: 
   #^*         $par: paramètres estimés
   #^*         $obj: NA
-  #^*         $ok: T si ok, F si pb lors de l'optimisation
+  #^*         $ok: TRUE si ok, FALSE si pb lors de l'optimisation
   #^*         $err: code d'erreur (0 = pas d'erreur)
   #^*         $message: message
   #^******************************************************************************

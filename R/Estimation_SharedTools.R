@@ -40,10 +40,10 @@
 #****************************
 
 # objets "estimate" et "uncertainty" par défaut
-Estimate_fail=list(par=NA,obj=NA,ok=F,err=666,message="fatal")
-Estimate_success=list(par=NA,obj=NA,ok=T,err=0,message="ok")
-Uncertainty_fail=list(cov=NA,sim=NA,ok=F,err=666,message="fatal")
-Uncertainty_success=list(cov=NA,sim=NA,ok=T,err=0,message="ok")
+Estimate_fail=list(par=NA,obj=NA,ok=FALSE,err=666,message="fatal")
+Estimate_success=list(par=NA,obj=NA,ok=TRUE,err=0,message="ok")
+Uncertainty_fail=list(cov=NA,sim=NA,ok=FALSE,err=666,message="fatal")
+Uncertainty_success=list(cov=NA,sim=NA,ok=TRUE,err=0,message="ok")
 
 # Constantes utilisée pour la loi de Gumbel
 gamma_gumbel=0.57721566490153
@@ -83,7 +83,7 @@ GetUncertainty_Bootstrap<-function(y,dist,par,estimator,type="P",
     x=matrix(z,nsim,n)
   } else { # "standard" bootstrap
     x=matrix(NA,nsim,n)
-    for(i in 1:nsim){x[i,]=sample(y,length(y),replace=T)}
+    for(i in 1:nsim){x[i,]=sample(y,length(y),replace=TRUE)}
   }
   v=apply(x,1,GetEstimate_OneSample_vector,dist,estimator,method,lower,upper)
   if(npar>1) {sim=t(v)} else {sim=as.matrix(v)}

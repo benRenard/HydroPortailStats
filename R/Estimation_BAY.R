@@ -68,9 +68,10 @@
 #' prior=list(prior1,prior2,prior3)
 #' par0=GetEstimate_ROUGH(y,'GEV')$par
 #' mcmc=GetEstimate_BAY(y,'GEV',prior,par0,batch.length=50,batch.n=50)
-#' par(mfrow=c(2,3))
+#' graphicalpar=par(mfrow=c(2,3))
 #' plot(mcmc$x[,1],type='l'); plot(mcmc$x[,2],type='l'); plot(mcmc$x[,3],type='l')
 #' hist(mcmc$x[,1]); hist(mcmc$x[,2]); hist(mcmc$x[,3])
+#' par(graphicalpar)
 #' @export
 GetEstimate_BAY<-function(y,dist,prior,par0,
                           mult=0.1,eps=0.1,
@@ -138,7 +139,7 @@ GetLogPrior<-function(par,prior){
   n=length(par)
   LP=0
   for(i in 1:n){
-    w=GetPdf(par[i],prior[[i]]$dist,prior[[i]]$par,log=T)
+    w=GetPdf(par[i],prior[[i]]$dist,prior[[i]]$par,log=TRUE)
     if(is.na(w)) return(NA)
     if(w==-Inf) return(-Inf)
     LP=LP+w

@@ -84,7 +84,7 @@ GetEstimate_ML<-function(y,dist,par0=NULL,method=optim_method_def,
   #^*    1. [list] Une liste comprenant: 
   #^*         $par: paramètres du max. de vraisemblance
   #^*         $obj: vraisemblance maximisée
-  #^*         $ok: T si ok, F si pb lors de l'optimisation
+  #^*         $ok: TRUE si ok, FALSE si pb lors de l'optimisation
   #^*         $err: code d'erreur (0 = pas d'erreur)
   #^*         $message: message
   #^******************************************************************************
@@ -112,7 +112,7 @@ GetEstimate_ML<-function(y,dist,par0=NULL,method=optim_method_def,
     fail=Estimate_fail
     fail$message="[par0=NULL] not allowed for this distribution"
     return(fail)}
-  w<-GetEstimate_ML_optim(y,dist,par0,method,lower,upper,do.hessian=F)
+  w<-GetEstimate_ML_optim(y,dist,par0,method,lower,upper,do.hessian=FALSE)
   if(w$convergence==0){
     ReturnEstimate(w$par,y,dist)
   } else {
@@ -222,14 +222,14 @@ GetLogLikelihood<-function(par,y,dist){
   #^* COMMENTAIRES: si les paramètres sont impossibles, retourne NA
   #^*               si la vraisemblance est nulle, retourne -Inf
   #^******************************************************************************  
-  p=sapply(y,GetPdf,dist,par,T)
+  p=sapply(y,GetPdf,dist,par,TRUE)
   if(any(is.na(p))) {return(NA)}
   if(any(p==-Inf)) {return(-Inf)}
   return(sum(p))
 }
 
 GetEstimate_ML_optim<-function(y,dist,par0,method=optim_method_def,
-                               lower = -Inf, upper = Inf,do.hessian=F){
+                               lower = -Inf, upper = Inf,do.hessian=FALSE){
   #^******************************************************************************
   #^* OBJET: Retourne l'estimateur du maximum de vraisemblance par optimisation
   #^******************************************************************************

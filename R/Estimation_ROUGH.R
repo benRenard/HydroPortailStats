@@ -80,7 +80,7 @@ GetEstimate_ROUGH<-function(y,dist){
   #^*    1. [list] Une liste comprenant: 
   #^*         $par: paramètres estimés
   #^*         $obj: fonction objectif (NA pour cet estimateur)
-  #^*         $ok: T si ok, F si pb lors du calcul
+  #^*         $ok: TRUE si ok, FALSE si pb lors du calcul
   #^*         $err: code d'erreur (0 = pas d'erreur)
   #^*         $message: message
   #^******************************************************************************

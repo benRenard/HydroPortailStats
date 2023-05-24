@@ -52,15 +52,15 @@ par_def=data.frame(index=NA,name=NA,estimate=NA,IC.low=NA,IC.high=NA,mean=NA,med
 test_def=list(pval=NA,stat=NA,xtra=NA)
 H3_def_fail=list(empirical=empirical_def,pcdf=pcdf_def,quantile=quantile_def,
                  par=par_def,KS=test_def,MK=test_def,Pettitt=test_def,
-                 u=Uncertainty_fail,ok=F,err=666,message="fatal",dist=NA)
+                 u=Uncertainty_fail,ok=FALSE,err=666,message="fatal",dist=NA)
 H3_def_success=list(empirical=empirical_def,pcdf=pcdf_def,quantile=quantile_def,
                  par=par_def,KS=test_def,MK=test_def,Pettitt=test_def,
-                 u=Uncertainty_success,ok=T,err=0,message="ok",dist=NA)
+                 u=Uncertainty_success,ok=TRUE,err=0,message="ok",dist=NA)
 
 # objets "options" par défaut
 options_def=list(FreqFormula="Hazen",pgrid=seq(0.001,0.999,0.001),
                  Tgrid=c(seq(1.1,1.9,0.1),seq(2,9,1),seq(10,90,10),seq(100,1000,100)),
-                 IClevel=0.9,p2T=1,invertT=F,splitZeros=F,lang="fr",
+                 IClevel=0.9,p2T=1,invertT=FALSE,splitZeros=FALSE,lang="fr",
                  nsim=nsim_def)
 mcmcoptions_def=list(mult=0.1,eps=0.1,batch.length=100,batch.n=100,
                      moverate.min=0.1,moverate.max=0.5,mult.down=0.9, mult.up=1.1,
@@ -148,7 +148,7 @@ mcmcoptions_def=list(mult=0.1,eps=0.1,batch.length=100,batch.n=100,
 Hydro3_Estimation<-function(y,dist,Emeth=Emeth_def,Umeth=Umeth_def,
                             options=options_def,mcmcoptions=mcmcoptions_def,
                             prior=GetDefaultPrior(GetParNumber(dist)),
-                            do.KS=T,do.MK=T,do.Pettitt=T){
+                            do.KS=TRUE,do.MK=TRUE,do.Pettitt=TRUE){
   #^******************************************************************************
   #^* OBJET: Principale fonction d'estimation d'HYDRO3
   #^******************************************************************************
@@ -202,7 +202,7 @@ Hydro3_Estimation<-function(y,dist,Emeth=Emeth_def,Umeth=Umeth_def,
   ###########################
   if(Emeth=="BAY"){
     par0=GetEstimate_ROUGH(z,dist)
-    if(par0$ok==F) {out=H3_def_fail;out$message="estimation:echec";return(out)}
+    if(par0$ok==FALSE) {out=H3_def_fail;out$message="estimation:echec";return(out)}
     mcmc=GetEstimate_BAY(z,dist,prior,par0$par,
                          mult=mcmcoptions$mult,eps=mcmcoptions$eps,
                          batch.length=mcmcoptions$batch.length,batch.n=mcmcoptions$batch.n,
@@ -212,7 +212,7 @@ Hydro3_Estimation<-function(y,dist,Emeth=Emeth_def,Umeth=Umeth_def,
   } else {
     w=GetEstimate_OneSample(z,dist,Emeth)
   }
-  if(w$ok==F) {out=H3_def_fail;out$message="estimation:echec";return(out)}
+  if(w$ok==FALSE) {out=H3_def_fail;out$message="estimation:echec";return(out)}
   out$dist=dist
   # fill in $par
   npar=GetParNumber(dist)
@@ -271,21 +271,21 @@ Hydro3_Estimation<-function(y,dist,Emeth=Emeth_def,Umeth=Umeth_def,
            PBOOT=GetUncertainty_Bootstrap(y,dist,w$par,Emeth,type="P",nsim=options$nsim),
            BAY=GetUncertainty(mcmc,burn=mcmcoptions$burn,slim=mcmcoptions$slim),
            Uncertainty_fail)
-  if(u$ok==T){
+  if(u$ok==TRUE){
     # actually not ok if simulated pars encompass infinity
-    if( any(is.infinite(u$sim)) ) {u$ok=F}
+    if( any(is.infinite(u$sim)) ) {u$ok=FALSE}
   }
-  if(u$ok==F) {out$err=u$err
+  if(u$ok==FALSE) {out$err=u$err
                out$message=paste("incertitude:echec:",u$message,sep="")
                out$u=Uncertainty_fail
                return(out)}
   # fill in $par
   out$u=u
-  out$par$mean=c(p0,apply(u$sim,2,mean,na.rm=T))
-  out$par$median=c(p0,apply(u$sim,2,stats::median,na.rm=T))
-  out$par$sdev=c(0,apply(u$sim,2,stats::sd,na.rm=T))
-  out$par$IC.low=c(p0,apply(u$sim,2,stats::quantile,probs=0.5*(1-options$IClevel),na.rm=T))
-  out$par$IC.high=c(p0,apply(u$sim,2,stats::quantile,probs=1-0.5*(1-options$IClevel),na.rm=T))
+  out$par$mean=c(p0,apply(u$sim,2,mean,na.rm=TRUE))
+  out$par$median=c(p0,apply(u$sim,2,stats::median,na.rm=TRUE))
+  out$par$sdev=c(0,apply(u$sim,2,stats::sd,na.rm=TRUE))
+  out$par$IC.low=c(p0,apply(u$sim,2,stats::quantile,probs=0.5*(1-options$IClevel),na.rm=TRUE))
+  out$par$IC.high=c(p0,apply(u$sim,2,stats::quantile,probs=1-0.5*(1-options$IClevel),na.rm=TRUE))
   # fill in $quantile
   Q=matrix(NA,options$nsim,length(pgrid))
   for (i in 1:options$nsim) {
@@ -293,8 +293,8 @@ Hydro3_Estimation<-function(y,dist,Emeth=Emeth_def,Umeth=Umeth_def,
     Q[i,!mask]=sapply((pgrid[!mask]-p0)/(1-p0),GetQuantile,dist,u$sim[i,])
     if(options$splitZeros) {Q[i,Q[i,]<=0]=0}
   }
-  out$quantile$IC.low=apply(Q,2,stats::quantile,probs=0.5*(1-options$IClevel),na.rm=T)
-  out$quantile$IC.high=apply(Q,2,stats::quantile,probs=1-0.5*(1-options$IClevel),na.rm=T)
+  out$quantile$IC.low=apply(Q,2,stats::quantile,probs=0.5*(1-options$IClevel),na.rm=TRUE)
+  out$quantile$IC.high=apply(Q,2,stats::quantile,probs=1-0.5*(1-options$IClevel),na.rm=TRUE)
   
   return(out)
 }
@@ -314,7 +314,7 @@ Hydro3_Estimation<-function(y,dist,Emeth=Emeth_def,Umeth=Umeth_def,
 #' Hydro3_Plot(H3)
 #' @importFrom graphics plot lines points rug par text
 #' @export
-Hydro3_Plot<-function(H3,useU=F,lwd=2,cex.lab=2,cex.axis=1.3,pch=19,col="red"){
+Hydro3_Plot<-function(H3,useU=FALSE,lwd=2,cex.lab=2,cex.axis=1.3,pch=19,col="red"){
   #^******************************************************************************
   #^* OBJET: Tracé des figures HYDRO3
   #^******************************************************************************
@@ -334,7 +334,8 @@ Hydro3_Plot<-function(H3,useU=F,lwd=2,cex.lab=2,cex.axis=1.3,pch=19,col="red"){
   #^******************************************************************************
   #^* COMMENTAIRES: 
   #^******************************************************************************
-  
+  oldpar=graphics::par(no.readonly=TRUE) # save original par settings
+  on.exit(graphics::par(oldpar)) # reverts to original settings on exit
   graphics::par(mfrow=c(2,2),mar=c(4,5,2,1)+0.2)
   # par plot
   graphics::plot(NULL,xlim=c(0,1),ylim=c(0,1),xaxt="n",yaxt="n",xlab="",ylab="",main=H3$dist)
@@ -380,7 +381,7 @@ Hydro3_Plot<-function(H3,useU=F,lwd=2,cex.lab=2,cex.axis=1.3,pch=19,col="red"){
 #'
 #' Compute the T-quantile from the results of Hydro3_Estimation() 
 #'
-#' @param T numeric, return period
+#' @param RP numeric, return period
 #' @param H3 list, resulting from a call to Hydro3_Estimation()
 #' @param options list, see ?Hydro3_Estimation
 #' @return A list with the following components:
@@ -391,7 +392,7 @@ Hydro3_Plot<-function(H3,useU=F,lwd=2,cex.lab=2,cex.axis=1.3,pch=19,col="red"){
 #' H3=Hydro3_Estimation(y,'Normal')
 #' GetQfromT(100,H3)
 #' @export
-GetQfromT<-function(T,H3,options=options_def){
+GetQfromT<-function(RP,H3,options=options_def){
   #^******************************************************************************
   #^* OBJET: Calcul d'un quantile pour une période de retour donnée
   #^******************************************************************************
@@ -400,7 +401,7 @@ GetQfromT<-function(T,H3,options=options_def){
   #^* CREE/MODIFIE: 28/08/2017
   #^******************************************************************************
   #^* IN
-  #^*    1. [real] T, période de retour
+  #^*    1. [real] RP, période de retour
   #^*    2. [list] H3, objet H3 résultant d'un appel de Hydro3_Estimation
   #^*    3. [list] options, objet "options"
   #^* OUT
@@ -413,16 +414,16 @@ GetQfromT<-function(T,H3,options=options_def){
   #^* COMMENTAIRES: 
   #^******************************************************************************
   fail=list(q=NA,IC=c(NA,NA))
-  # check whether T is valid
-  if(T<=0) {return(fail)}
-  p=T2p(T,factor=options$p2T,invert=options$invertT)
+  # check whether RP is valid
+  if(RP<=0) {return(fail)}
+  p=T2p(RP,factor=options$p2T,invert=options$invertT)
   if(is.na(p)){return(fail)}
   # compute q
   p0=H3$par$estimate[1]
   q=GetQ_engine(par=H3$par$estimate[-1],p=p,p0=p0,dist=H3$dist,options=options)
   # compute IC
   uq=apply(H3$u$sim,1,GetQ_engine,p=p,p0=p0,dist=H3$dist,options=options)
-  IC=as.numeric(stats::quantile(uq,probs=c(0.5*(1-options$IClevel),1-0.5*(1-options$IClevel)),na.rm=T))
+  IC=as.numeric(stats::quantile(uq,probs=c(0.5*(1-options$IClevel),1-0.5*(1-options$IClevel)),na.rm=TRUE))
   return(list(q=q,IC=IC))
 }
 
@@ -434,7 +435,7 @@ GetQfromT<-function(T,H3,options=options_def){
 #' @param H3 list, resulting from a call to Hydro3_Estimation()
 #' @param options list, see ?Hydro3_Estimation
 #' @return A list with the following components:
-#'     \item{T}{numeric, return period}
+#'     \item{RP}{numeric, return period}
 #'     \item{IC}{numeric vector, uncertainty interval}
 #' @examples
 #' y=stats::rnorm(50)
@@ -464,34 +465,34 @@ GetTfromQ<-function(q,H3,options=options_def){
   #^******************************************************************************
   # compute q
   p0=H3$par$estimate[1]
-  T=GetT_engine(par=H3$par$estimate[-1],q=q,p0=p0,dist=H3$dist,options=options)
+  RP=GetT_engine(par=H3$par$estimate[-1],q=q,p0=p0,dist=H3$dist,options=options)
   # compute IC
   uT=apply(H3$u$sim,1,GetT_engine,q=q,p0=p0,dist=H3$dist,options=options)
-  IC=as.numeric(stats::quantile(uT,probs=c(0.5*(1-options$IClevel),1-0.5*(1-options$IClevel)),na.rm=T))
-  return(list(T=T,IC=IC))
+  IC=as.numeric(stats::quantile(uT,probs=c(0.5*(1-options$IClevel),1-0.5*(1-options$IClevel)),na.rm=TRUE))
+  return(list(RP=RP,IC=IC))
 }
 
 #****************************
 # Fonctions privées ----
 #****************************
 
-p2T<-function(p,factor=1,invert=F){
+p2T<-function(p,factor=1,invert=FALSE){
   if(p>=1) {if(invert) {return(-Inf)} else {return(Inf)}}
   if(p<=0) {if(invert) {return(Inf)} else {return(-Inf)}}
   if(invert) {
-    T=1/(factor*p)
+    RP=1/(factor*p)
   } else {
-    T=1/(factor*(1-p))
+    RP=1/(factor*(1-p))
   }
-  return(T)
+  return(RP)
 }
 
-T2p<-function(T,factor=1,invert=F){
-  if(T*factor<1) {return(NA)}
+T2p<-function(RP,factor=1,invert=FALSE){
+  if(RP*factor<1) {return(NA)}
   if(invert) {
-    p=1/(factor*T)
+    p=1/(factor*RP)
   } else {
-    p=1-1/(factor*T)
+    p=1-1/(factor*RP)
   }
   return(p)
 }
@@ -510,6 +511,6 @@ GetQ_engine<-function(par,p,p0,dist,options){
 
 GetT_engine<-function(par,q,p0,dist,options){
   p=GetCdf(y=q,dist=dist,par=par)
-  T=p2T(max(p,p0),options$p2T,options$invertT)
-  return(T)
+  RP=p2T(max(p,p0),options$p2T,options$invertT)
+  return(RP)
 }

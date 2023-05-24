@@ -35,6 +35,7 @@ f=function(x){stats::dbeta(x[1],0.8,0.4,log=TRUE)+stats::dexp(x[2],log=TRUE)}
 x0=c(0.5,2)
 sdjump=c(0.5,1)
 mcmc=Metropolis_OAAT(f,x0,1000,sdjump)
-par(mfrow=c(1,3))
+graphicalpar=par(mfrow=c(1,3))
 plot(mcmc$x);hist(mcmc$x[,1]); hist(mcmc$x[,2])
+par(graphicalpar)
 }

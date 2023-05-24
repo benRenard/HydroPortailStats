@@ -6,7 +6,7 @@
 \usage{
 Hydro3_Plot(
   H3,
-  useU = F,
+  useU = FALSE,
   lwd = 2,
   cex.lab = 2,
   cex.axis = 1.3,
