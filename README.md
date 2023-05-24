@@ -6,9 +6,9 @@ HydroPortailStats
 # Introduction
 
 This R package contains the statistical functions used in the French
-[HydroPortail](https://www.hydroportail.developpement-durable.gouv.fr/).
-This includes functions to estimate distributions, quantile curves and
-uncertainties, along with various other utilities.
+[HydroPortail](https://hydro.eaufrance.fr/). This includes functions to
+estimate distributions, quantile curves and uncertainties, along with
+various other utilities.
 
 *Ce package R contient les fonctions statistiques utilisées par
 l’[HydroPortail](https://www.hydroportail.developpement-durable.gouv.fr/).
@@ -17,8 +17,9 @@ distribution, calculer les courbes de quantiles et leur incertitude, et
 d’autres outils variés.*
 
 ``` r
-#devtools::install_github('benRenard/HydroPortailStats') # install the package from GitHub
-library(HydroPortailStats) # load the package
+install.packages('HydroPortailStats')  # Install the package from CRAN
+#devtools::install_github('benRenard/HydroPortailStats') # Install the development version from GitHub
+library(HydroPortailStats) # Load the package
 ```
 
 **Important warning**: many distributions are available in
@@ -93,25 +94,25 @@ plot(y,type='b')
 The main function of this package is `Hydro3_Estimation` (‘Hydro3’ is
 the name given to the current hydrometric data management system in
 France, which includes the HydroPortail). The line of code below
-performs estimation with default options (see ?Hydro3\_Estimation)
+performs estimation with default options (see ?Hydro3_Estimation)
 
 *La fonction principale de ce package est `Hydro3_Estimation` (‘Hydro3’
 est le nom de l’actuel système de gestion des données hydrométriques en
 France, dont fait partie l’HydroPortail). La ligne de code ci-dessous
 effectue une estimation en utilisant les options par défaut (voir
-?Hydro3\_Estimation)*
+?Hydro3_Estimation)*
 
 ``` r
 h3=Hydro3_Estimation(y=y,dist=dist)
 ```
 
 The `h3` variable is a list containing all results of the estimation. A
-detailled description is given in the help (?Hydro3\_Estimation), but in
+detailled description is given in the help (?Hydro3_Estimation), but in
 short `h3` contains all the information displayed in the plot below.
 
 *La variable `h3` est une liste contenant tous les résultats de
 l’estimation. Une description détaillée est fournie dans l’aide
-(?Hydro3\_Estimation), mais pour résumer `h3` contient toutes les
+(?Hydro3_Estimation), mais pour résumer `h3` contient toutes les
 informations visibles dans le graphique ci-dessous.*
 
 ``` r
@@ -171,9 +172,9 @@ Les méthodes de quantification des incertitudes disponibles sont ‘PBOOT’
 recommandé), ‘NONE’ (pas de quantification des incertitudes), ‘ML’
 (seulement utilisable quand la méthode d’estimation est également ‘ML’)
 et ‘BAY’ (la seule méthode utilisable quand la méthode d’estimation est
-également ‘BAY’). En guise d’illustration, une estimation par la
-méthode des moments est effectuée ci-dessous, avec du Bootstrap
-paramétrique pour les incertitudes.*
+également ‘BAY’). En guise d’illustration, une estimation par la méthode
+des moments est effectuée ci-dessous, avec du Bootstrap paramétrique
+pour les incertitudes.*
 
 ``` r
 h3=Hydro3_Estimation(y=y,dist=dist,Emeth="MOM",Umeth="PBOOT")
@@ -196,7 +197,7 @@ Hydro3_Plot(h3)
 It is possible to skip uncertainty quantification (but why would you?)
 
 *Il est possible de zapper la quantification des incertitudes (mais
-c’est pas bien\!)*
+c’est pas bien!)*
 
 ``` r
 h3=Hydro3_Estimation(y=y,dist=dist,Emeth="ML",Umeth="NONE")
@@ -268,7 +269,7 @@ associated with small values. Default estimation options need to be
 modified as shown below. Note the inversion of the quantile curve.
 
 *Lorsqu’on s’interesse aux extrêmes bas (basses eaux par exemple), les
-grandes périodes de retour sont associées aux petites valeurs\! Il faut
+grandes périodes de retour sont associées aux petites valeurs! Il faut
 alors modifier les options d’estimation par defaut comme illustré
 ci-dessous. Notez l’inversion de la courbe des quantiles.*
 
@@ -316,13 +317,13 @@ Hydro3_Plot(h3_def)
 
 # Low flows peculiarities / Quelques spécificités des basses eaux
 
-The distribution ‘GEV\_min’ is the dual of the distribution ‘GEV’ but
-for minima rather than maxima. Let’s create a low-flow dataset by
-generating values from it.
+The distribution ‘GEV_min’ is the dual of the distribution ‘GEV’ but for
+minima rather than maxima. Let’s create a low-flow dataset by generating
+values from it.
 
-*La distribution ‘GEV\_min’ est le pendant de la distribution ‘GEV’,
-mais pour les minima plutot que les maxima. On peut créer un jeu de
-données de ‘basses eaux’ en y simulant des réalisations:*
+*La distribution ‘GEV_min’ est le pendant de la distribution ‘GEV’, mais
+pour les minima plutot que les maxima. On peut créer un jeu de données
+de ‘basses eaux’ en y simulant des réalisations:*
 
 ``` r
 dist="GEV_min"
@@ -332,11 +333,11 @@ plot(y,type='b')
 
 ![](man/readme/README-unnamed-chunk-17-1.png)<!-- -->
 
-Estimation of the ‘GEV\_min’ distribution is illustrated below. Since
+Estimation of the ‘GEV_min’ distribution is illustrated below. Since
 this is a ‘low extreme’ analysis, the option invertT has to be activated
 as previously described.
 
-*L’estimation de la distribution ‘GEV\_min’ est illustrée ci-dessous.
+*L’estimation de la distribution ‘GEV_min’ est illustrée ci-dessous.
 Comme on s’interesse aux extrêmes bas il faut penser à modifier l’option
 invertT comme précédemment décrit.*
 
@@ -351,13 +352,13 @@ Hydro3_Plot(h3)
 
 An issue frequently encountered with low flows analysis is that
 quantiles with high return period become negative, which is not
-satisfactory for streamflow. The distribution ‘GEV\_min\_pos’ is a
-modified ‘GEV\_min’ that is always strictly positive.
+satisfactory for streamflow. The distribution ‘GEV_min_pos’ is a
+modified ‘GEV_min’ that is always strictly positive.
 
 *Une difficulté souvent rencontrée est que les quantiles de grande
 période de retour deviennent negatifs, ce qui est génant pour des
-débits. La distribution ‘GEV\_min\_pos’ est une ‘GEV\_min’ modifiée
-pour toujours rester strictement positive.*
+débits. La distribution ‘GEV_min_pos’ est une ‘GEV_min’ modifiée pour
+toujours rester strictement positive.*
 
 ``` r
 # Note that only 'ML' estimation is available for distribution 'GEV_min_pos' / Notez que seule la méthode 'ML' est disponible pour la distribution 'GEV_min_pos'
