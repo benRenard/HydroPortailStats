@@ -13,6 +13,8 @@ Description: Statistical functions used in the French 'HydroPortail' <https://hy
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
+URL: https://github.com/benRenard/HydroPortailStats
+BugReports: https://github.com/benRenard/HydroPortailStats/issues
 Depends:
     R (>= 3.5.0)
 Imports:
