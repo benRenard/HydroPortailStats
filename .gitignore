@@ -40,3 +40,8 @@ vignettes/*.pdf
 
 # CRAN submission
 CRAN-SUBMISSION
+
+# misc.
+logo_v0*
+logo.png
+
