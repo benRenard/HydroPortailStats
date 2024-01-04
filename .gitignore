@@ -42,6 +42,6 @@ vignettes/*.pdf
 CRAN-SUBMISSION
 
 # misc.
+logo (copy).svg
 logo_v0*
-logo.png
-
+logo_1280x640.png

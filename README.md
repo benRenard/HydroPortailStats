@@ -1,9 +1,9 @@
-HydroPortailStats
-================
+
+# HydroPortailStats <a href="https://cran.r-project.org/web/packages/HydroPortailStats/index.html"><img src="logo.png" align="right" height="138" /></a>
 
 [![DOI](https://zenodo.org/badge/424274482.svg)](https://zenodo.org/badge/latestdoi/424274482)
 
-# Introduction
+## Introduction
 
 This R package contains the statistical functions used in the French
 [`HydroPortail`](https://hydro.eaufrance.fr/). This includes functions
@@ -72,7 +72,7 @@ distInfo[['GEV']]
     ## $warning
     ## [1] "xi < 0 corresponds to a heavy right tail, xi > 0 to a right-bounded distribution. This is THE OPPOSITE of the parameterization used in e.g. wikipedia or R package evd"
 
-# Getting started / Premiers pas
+## Getting started / Premiers pas
 
 Let’s start by creating a dataset that will be used to estimate a
 distribution.
@@ -153,7 +153,7 @@ GetTfromQ(250,H3=h3)
     ## $IC
     ## [1]  5.22097 24.11926
 
-# Estimation and uncertainty quantification methods / Méthodes d’estimation et de quantification des incertitudes
+## Estimation and uncertainty quantification methods / Méthodes d’estimation et de quantification des incertitudes
 
 Available estimation methods are ‘LMOM’ (L-Moments, default), ‘MOM’
 (Moments), ‘ML’ (Maximum Likelihood) and ‘BAY’ (Bayesian). Available
@@ -225,7 +225,7 @@ Hydro3_Plot(h3) # Uncertainty quantification has been ignored/ la quantification
 
 ![](man/readme/README-unnamed-chunk-12-1.png)<!-- -->
 
-# Some Bayesian stuff / Un peu de Bayesien
+## Some Bayesian stuff / Un peu de Bayesien
 
 Bayesian estimation is available (computing time is higher). By default
 all prior distributions are flat.
@@ -261,7 +261,7 @@ Hydro3_Plot(h3)
 
 ![](man/readme/README-unnamed-chunk-14-1.png)<!-- -->
 
-# Modifying estimation options / Modifier les options d’estimation
+## Modifying estimation options / Modifier les options d’estimation
 
 When analysing low extremes (e.g. low flows), large return periods are
 associated with small values. Default estimation options need to be
@@ -314,7 +314,7 @@ Hydro3_Plot(h3_def)
 
 ![](man/readme/README-unnamed-chunk-16-2.png)<!-- -->
 
-# Low flows peculiarities / Quelques spécificités des basses eaux
+## Low flows peculiarities / Quelques spécificités des basses eaux
 
 The distribution ‘GEV_min’ is the dual of the distribution ‘GEV’ but for
 minima rather than maxima. Let’s create a low-flow dataset by generating
