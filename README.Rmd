@@ -1,6 +1,4 @@
 ---
-title: "HydroPortailStats"
-subtitle: "HydroPortail statistical functions - Fonctions statistiques de l'HydroPortail"
 output: github_document
 ---
 
@@ -9,9 +7,12 @@ knitr::opts_chunk$set(echo=TRUE,warning=FALSE,message=FALSE,fig.path = "man/read
 set.seed(654321)
 ```
 
+# HydroPortailStats <a href="https://cran.r-project.org/web/packages/HydroPortailStats/index.html"><img src="logo.png" align="right" height="138" /></a>
+
 [![DOI](https://zenodo.org/badge/424274482.svg)](https://zenodo.org/badge/latestdoi/424274482)
 
-# Introduction
+
+## Introduction
 
 This R package contains the statistical functions used in the French [`HydroPortail`](https://hydro.eaufrance.fr/). This includes functions to estimate distributions, quantile curves and uncertainties, along with various other utilities.
 
@@ -37,7 +38,7 @@ names(distInfo)
 distInfo[['GEV']]
 ```
 
-# Getting started / Premiers pas
+## Getting started / Premiers pas
 
 Let's start by creating a dataset that will be used to estimate a distribution.
 
@@ -82,7 +83,7 @@ GetQfromT(100,H3=h3)
 GetTfromQ(250,H3=h3)
 ```
 
-# Estimation and uncertainty quantification methods / Méthodes d'estimation et de quantification des incertitudes
+## Estimation and uncertainty quantification methods / Méthodes d'estimation et de quantification des incertitudes
 
 Available estimation methods are 'LMOM' (L-Moments, default), 'MOM' (Moments), 'ML' (Maximum Likelihood) and 'BAY' (Bayesian). Available uncertainty quantification methods are 'PBOOT' (Parametric bootstrap, default), 'BOOT' (Bootstrap, not recommended), 'NONE', 'ML' (only usable when estimation method is 'ML' as well) and 'BAY' (the only usable method when estimation method is 'BAY'). As an illustration, moment estimation is used below, with parametric bootstrap for quantifying uncertainty.
 
@@ -121,7 +122,7 @@ h3$u$message # Look at error message in h3$u (uncertainty results) / Message d'e
 Hydro3_Plot(h3) # Uncertainty quantification has been ignored/ la quantification des incertitudes a été ignorée
 ```
 
-# Some Bayesian stuff / Un peu de Bayesien
+## Some Bayesian stuff / Un peu de Bayesien
 
 Bayesian estimation is available (computing time is higher). By default all prior distributions are flat.
 
@@ -148,7 +149,7 @@ h3=Hydro3_Estimation(y=y,dist=dist,Emeth="BAY",Umeth="BAY",prior=prior)
 Hydro3_Plot(h3)
 ```
 
-# Modifying estimation options / Modifier les options d'estimation
+## Modifying estimation options / Modifier les options d'estimation
 
 When analysing low extremes (e.g. low flows), large return periods are associated with small values. Default estimation options need to be modified as shown below. Note the inversion of the quantile curve.
 
@@ -183,7 +184,7 @@ h3_def=Hydro3_Estimation(y=y.supseuil,dist="GPD3",options=options_def)
 Hydro3_Plot(h3_def)
 ```
 
-# Low flows peculiarities / Quelques spécificités des basses eaux
+## Low flows peculiarities / Quelques spécificités des basses eaux
 
 The distribution 'GEV_min' is the dual of the distribution 'GEV' but for minima rather than maxima. Let's create a low-flow dataset by generating values from it.
 
