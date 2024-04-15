@@ -47,7 +47,7 @@ is a list of the form pr=list(dist=..., par=...). See example below.}
 }
 \value{
 A list with the following components:
-    \item{x}{numeric matrix nsim*length(x0), MCMC simulations}
+    \item{x}{numeric matrix nsim*length(par0), MCMC simulations}
     \item{fx}{numeric vector, corresponding values f(x)}
 }
 \description{

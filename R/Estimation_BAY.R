@@ -26,14 +26,13 @@
 #~* CREE/MODIFIE: 09/07/2015
 #~******************************************************************************
 #~* PRINCIPALES FONCTIONS
-#~*    1. XXX
-#~*    2. XXX
+#~*    1. GetEstimate_BAY
 #~******************************************************************************
-#~* REF.: XXX
+#~* REF.: -
 #~******************************************************************************
-#~* A FAIRE: XXX
+#~* A FAIRE: -
 #~******************************************************************************
-#~* COMMENTAIRES: XXX
+#~* COMMENTAIRES: -
 #~******************************************************************************
 
 #****************************
@@ -58,7 +57,7 @@
 #' @param mult.down numeric in (0;1), MCMC parameter: multiplication factor used to decrease jump size when move rate is too low.
 #' @param mult.up numeric (>1, avoid 1/mult.down), MCMC parameter: multiplication factor used to increase jump size when move rate is too high.
 #' @return A list with the following components:
-#'     \item{x}{numeric matrix nsim*length(x0), MCMC simulations}
+#'     \item{x}{numeric matrix nsim*length(par0), MCMC simulations}
 #'     \item{fx}{numeric vector, corresponding values f(x)}
 #' @examples
 #' y=c(9.2,9.5,11.4,9.5,9.4,9.6,10.5,11.1,10.5,10.4)
