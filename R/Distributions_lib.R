@@ -88,6 +88,7 @@ GetParNumber<-function(dist){
               Gumbel_min=2,
               GEV_min=3,
               GEV_min_pos=2,
+              Triangle=3,
               NA)
   return(Npar)}
 
@@ -126,7 +127,7 @@ GetParName<-function(dist,lang='fr'){
   #^******************************************************************************
   name=switch(dist,
               FlatPrior="",
-              Uniform=switch(lang,fr=c('borne_inf','borne_sup'),en=c('lower-bound','higher_bound'),NA), 
+              Uniform=switch(lang,fr=c('borne_inf','borne_sup'),en=c('lower_bound','higher_bound'),NA), 
               Normal=switch(lang,fr=c('moyenne','ecart_type'),en=c('mean','standard_deviation'),NA),
               LogNormal=switch(lang,fr=c('moyenne_log','ecart_type_log'),en=c('mean_log','standard_deviation_log'),NA),
               Gumbel=switch(lang,fr=c('position','echelle'),en=c('location','scale'),NA),
@@ -141,6 +142,7 @@ GetParName<-function(dist,lang='fr'){
               Gumbel_min=switch(lang,fr=c('position','echelle'),en=c('location','scale'),NA),
               GEV_min=switch(lang,fr=c('position','echelle','forme'),en=c('location','scale','shape'),NA),
               GEV_min_pos=switch(lang,fr=c('position','echelle'),en=c('location','scale'),NA),
+              Triangle=switch(lang,fr=c('pic','borne_inf','borne_sup'),en=c('peak','lower_bound','higher_bound'),NA),
               NA)
   return(name)}
 
@@ -198,6 +200,7 @@ GetParFeas<-function(dist,par){
               Gumbel_min={if(par[2]<=0){FALSE} else {TRUE}},
               GEV_min={if(par[2]<=0){FALSE} else {TRUE}},
               GEV_min_pos={if( (par[1]<=0) | (par[2]<=0)){FALSE} else {TRUE}},
+              Triangle={if( (par[3]<=par[2]) | (par[3]<=par[1]) | (par[1]<=par[2])){FALSE} else {TRUE}},
               NA)
   return(feas)}
 
@@ -269,6 +272,7 @@ GetPdf<-function(y,dist,par,log=FALSE){
              Gumbel_min=evd::dgumbel(-1*y,loc=-1*par[1],scale=par[2],log=log),
              GEV_min=evd::dgev(-1*y,loc=-1*par[1],scale=par[2],shape=-1*par[3],log=log),
              GEV_min_pos=evd::dgev(-1*y,loc=-1*par[1],scale=par[2],shape=-1*par[2]/par[1],log=log),
+             Triangle=dtriangle(y,peak=par[1],min=par[2],max=par[3],log=log),
              NA)
   return(pdf)}
 
@@ -332,6 +336,7 @@ GetCdf<-function(y,dist,par){
              Gumbel_min=1-evd::pgumbel(-1*y,loc=-1*par[1],scale=par[2]),
              GEV_min=1-evd::pgev(-1*y,loc=-1*par[1],scale=par[2],shape=-1*par[3]),
              GEV_min_pos=1-evd::pgev(-1*y,loc=-1*par[1],scale=par[2],shape=-1*par[2]/par[1]),
+             Triangle=ptriangle(y,peak=par[1],min=par[2],max=par[3]),
              NA)
   return(cdf)}
 
@@ -395,6 +400,7 @@ GetQuantile<-function(p,dist,par){
            Gumbel_min=-1*evd::qgumbel(1-p,loc=-1*par[1],scale=par[2]),
            GEV_min=-1*evd::qgev(1-p,loc=-1*par[1],scale=par[2],shape=-1*par[3]),
            GEV_min_pos=-1*evd::qgev(1-p,loc=-1*par[1],scale=par[2],shape=-1*par[2]/par[1]),
+           Triangle=qtriangle(p,peak=par[1],min=par[2],max=par[3]),
            NA)
   return(q)}
 
@@ -455,6 +461,7 @@ Generate<-function(dist,par,n=1){
            Gumbel_min=-1*evd::rgumbel(n,loc=-1*par[1],scale=par[2]),
            GEV_min=-1*evd::rgev(n,loc=-1*par[1],scale=par[2],shape=-1*par[3]),
            GEV_min_pos=-1*evd::rgev(n,loc=-1*par[1],scale=par[2],shape=-1*par[2]/par[1]),
+           Triangle=rtriangle(n,peak=par[1],min=par[2],max=par[3]),
            NA)
   return(r)}
 
@@ -516,5 +523,44 @@ GetReducedVariate<-function(p,dist){
            Gumbel_min=-1*evd::qgumbel(1-p,loc=0,scale=1),
            GEV_min=-1*evd::qgumbel(1-p,loc=0,scale=1),
            GEV_min_pos=-1*evd::qgumbel(1-p,loc=0,scale=1),
+           Triangle=stats::qunif(p,min=0,max=1),
            NA)
   return(q)}
+
+
+#****************************
+# Private functions ----
+#****************************
+
+dtriangle <- function(x,peak=0,min=-1,max=1,log=FALSE){
+  out=rep(0,length(x))
+  out[ x<=peak & x>min ] = (2*(x[x<=peak & x>min]-min))/((max-min)*(peak-min))
+  out[ x>peak & x<max ]  = (2*(max-x[x>peak & x<max]))/((max-min)*(max-peak))
+  if(log==TRUE) {out=log(out)}
+  return(out)
+}
+
+ptriangle <- function(x,peak=0,min=-1,max=1){
+  out=rep(NA,length(x))
+  out[x<=min]=0
+  out[x>=max]=1
+  out[ x<=peak & x>min ] = ((x[x<=peak & x>min]-min)**2)/((max-min)*(peak-min))
+  out[ x>peak & x<max ]  = 1-((max-x[x>peak & x<max])**2)/((max-min)*(max-peak))
+  return(out)
+}
+
+qtriangle <- function(p,peak=0,min=-1,max=1){
+  r=(peak-min)/(max-min)
+  out=rep(NA,length(p))
+  out[p==0]=min
+  out[p==1]=max
+  out[ p>0 & p<=r ] = min+sqrt(p[p>0 & p<=r]*(max-min)*(peak-min))
+  out[ p<1 & p>r ]  = max-sqrt((1-p[p<1 & p>r])*(max-min)*(max-peak))
+  return(out)
+}
+
+rtriangle <- function(n,peak=0,min=-1,max=1){
+  u=runif(n)
+  out=qtriangle(u,peak,min,max)
+  return(out)
+}

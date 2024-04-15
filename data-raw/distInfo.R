@@ -121,7 +121,14 @@ distInfo=list(
                  constraints=c(),
                  url='https://en.wikipedia.org/wiki/Prior_probability#Examples',
                  note='improper distribution corresponding to a uniform distribution on (-infinity;+infinity)',
-                 warning='should only be used as a prior distribution')
+                 warning='should only be used as a prior distribution'),
+  Triangle=list(parName=c('Peak','lowBound','highBound'),
+               parLongName=c('Peak','lower bound','upper bound'),
+               parSymbol=c('c','a','b'),
+               constraints=c('a<c<b'),
+               url='https://en.wikipedia.org/wiki/Triangular_distribution',
+               note=NULL,
+               warning=NULL)
 )
 
 save(distInfo,file='../data/distInfo.RData')
