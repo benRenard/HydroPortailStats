@@ -2,7 +2,7 @@
 % Please edit documentation in R/Estimation_HBay.R
 \name{GetEstimate_HBay}
 \alias{GetEstimate_HBay}
-\title{Bayesian estimation of a distribution using historical data}
+\title{Bayesian estimation using historical data}
 \usage{
 GetEstimate_HBay(
   y,
@@ -30,7 +30,7 @@ Where y[i,1]<y[i,2], the value is assumed to be in the interval [y[i,1];y[i,2]]
 -Inf and +Inf are allowed for data being only right- or left-censored 
 (i.e. values known to be smaller than or larger than some threshold).}
 
-\item{dist}{character, distribution name. Only distributions 'GEV', 'Gumbel' and 'LogNormal' are supported.}
+\item{dist}{character, distribution name. Only distributions 'GEV' and 'Gumbel' are supported.}
 
 \item{prior}{list of lists, prior distributions. For each parameter to be estimated, the prior
 is a list of the form pr=list(dist=..., par=...). See example below.}
@@ -70,6 +70,31 @@ A list with the following components:
     \item{fx}{numeric vector, corresponding values f(x)}
 }
 \description{
-XXX 
+Bayesian estimation of a GEV or Gumbel distribution based on a mixed sample containing 
+point (i.e. perfectly known) or interval (i.e. known to be within bounds) data.
+Systematic errors induced by rating curve errors can also be accounted for. 
 Returns MCMC samples from the posterior distribution.
+}
+\examples{
+set.seed(98765)
+y0=Generate('GEV',c(100,50,-0.2),100)
+y=cbind(y0,y0)
+# Mimics censoring between 0 and 300 for first 70 years
+y[1:70,1][y0[1:70]<300]=0
+y[1:70,2][y0[1:70]<300]=300
+plot(y[,1]);points(y[,2])
+# Systematoc errors
+SystErrorIndex=c(rep(1,70),rep(2,30))
+SystErrorPrior=list(list(dist="Triangle",par=c(1,0.7,1.3)),
+                    list(dist="Triangle",par=c(1,0.95,1.05)))
+# Priors on GEV parameters
+prior=list(list(dist="FlatPrior",par=NULL),
+           list(dist="FlatPrior",par=NULL),
+           list(dist="Normal",par=c(0,0.25)))
+# Go!
+mcmc=GetEstimate_HBay(y=y,dist='GEV',prior=prior,
+                      SystErrorIndex=SystErrorIndex,
+                      SystErrorPrior=SystErrorPrior,
+                      batch.length=25,batch.n=40)
+par(mfrow=c(2,3));for(i in 1:5){hist(mcmc$x[,i])}
 }

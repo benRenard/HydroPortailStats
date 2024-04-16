@@ -27,9 +27,11 @@
 # Fonctions principales ----
 #****************************
 
-#' Bayesian estimation of a distribution using historical data
+#' Bayesian estimation using historical data
 #'
-#' XXX 
+#' Bayesian estimation of a GEV or Gumbel distribution based on a mixed sample containing 
+#' point (i.e. perfectly known) or interval (i.e. known to be within bounds) data.
+#' Systematic errors induced by rating curve errors can also be accounted for. 
 #' Returns MCMC samples from the posterior distribution.
 #'
 #' @param y numeric 2-column matrix, data. 
@@ -38,7 +40,7 @@
 #'     Where y[i,1]<y[i,2], the value is assumed to be in the interval [y[i,1];y[i,2]]
 #'     -Inf and +Inf are allowed for data being only right- or left-censored 
 #'     (i.e. values known to be smaller than or larger than some threshold).
-#' @param dist character, distribution name. Only distributions 'GEV', 'Gumbel' and 'LogNormal' are supported.
+#' @param dist character, distribution name. Only distributions 'GEV' and 'Gumbel' are supported.
 #' @param prior list of lists, prior distributions. For each parameter to be estimated, the prior
 #'     is a list of the form pr=list(dist=..., par=...). See example below.
 #' @param SystErrorIndex integer vector, length NROW(y). Index of systematic errors.
@@ -62,6 +64,27 @@
 #'     \item{x}{numeric matrix nsim * (length(par0)+length(SystError0)), MCMC simulations}
 #'     \item{fx}{numeric vector, corresponding values f(x)}
 #' @examples
+#' set.seed(98765)
+#' y0=Generate('GEV',c(100,50,-0.2),100)
+#' y=cbind(y0,y0)
+#' # Mimics censoring between 0 and 300 for first 70 years
+#' y[1:70,1][y0[1:70]<300]=0
+#' y[1:70,2][y0[1:70]<300]=300
+#' plot(y[,1]);points(y[,2])
+#' # Systematoc errors
+#' SystErrorIndex=c(rep(1,70),rep(2,30))
+#' SystErrorPrior=list(list(dist="Triangle",par=c(1,0.7,1.3)),
+#'                     list(dist="Triangle",par=c(1,0.95,1.05)))
+#' # Priors on GEV parameters
+#' prior=list(list(dist="FlatPrior",par=NULL),
+#'            list(dist="FlatPrior",par=NULL),
+#'            list(dist="Normal",par=c(0,0.25)))
+#' # Go!
+#' mcmc=GetEstimate_HBay(y=y,dist='GEV',prior=prior,
+#'                       SystErrorIndex=SystErrorIndex,
+#'                       SystErrorPrior=SystErrorPrior,
+#'                       batch.length=25,batch.n=40)
+#' par(mfrow=c(2,3));for(i in 1:5){hist(mcmc$x[,i])}
 #' @export
 GetEstimate_HBay<-function(y,dist,prior,
                            SystErrorIndex=rep(0,NROW(y)),SystErrorPrior=list(),
@@ -70,12 +93,97 @@ GetEstimate_HBay<-function(y,dist,prior,
                            batch.length=100,batch.n=100,
                            moverate.min=0.1,moverate.max=0.5,
                            mult.down=0.9, mult.up=1.1){
+  
+  # Preliminary checks ----
+  if( !(dist %in% c('GEV','Gumbel')) ){
+    stop(paste0('Unsupported distribution: "',dist,'". Only "GEV" and "Gumbel" are allowed'))
+  }
+  if( any(y[,1]>y[,2]) ){
+    stop(paste0('Bounds inversion y[i,1]>y[i,2]: lower bound is larger than upper bound for at least one row in y'))
+  }
+  if( any(SystErrorIndex <0 ) ){
+    stop(paste0('Invalid systematic error index: SystErrorIndex <0'))
+  } 
+  if( max(SystErrorIndex)>length(SystErrorPrior) ){
+    stop(paste0('The number of prior distributions provided in SystErrorPrior ',
+                'is too small compared with the number of systematic errors',
+                ': max(SystErrorIndex)>length(SystErrorPrior)'))
+  } 
+  if(length(prior)>0){
+    if( any(sapply(prior,class)!='list') ){
+      stop(paste0(
+        'Badly formed prior. A list of lists is expected, e.g. for 2 parameters:\n ',
+        'prior=list( list(dist="FlatPrior",par=NULL) , list(dist="Normal",par=c(0,0.25)) )')
+        )
+    }
+  }
+  if(length(SystErrorPrior)>0){
+    if( any(sapply(SystErrorPrior,class)!='list') ){
+      stop(paste0(
+        'Badly formed SystErrorPrior A list of lists is expected, e.g. for 2 systematic errors:\n ',
+        'SystErrorPrior=list( list(dist="Triangle",par=c(1,0.7,1.3)) , list(dist="Triangle",par=c(1,0.9,1.1)) )')
+      )
+    }
+  }
+  
+  # MCMC sampling ----
+  sdjump=mult*c(par0,SystError0)
+  sdjump[sdjump==0]=eps
+  out=Metropolis_OAAT_adaptive(GetHBayLogPost,c(par0,SystError0),sdjump,
+                               y=y,dist=dist,prior=prior,
+                               SystErrorIndex=SystErrorIndex,SystErrorPrior=SystErrorPrior,
+                               batch.length=batch.length,batch.n=batch.n,
+                               moverate.min=moverate.min,moverate.max=moverate.max,
+                               mult.down=mult.down, mult.up=mult.up)
+  return(out)
+}
 
-  # sdjump=mult*par0;sdjump[sdjump==0]=eps
-  # out=Metropolis_OAAT_adaptive(GetLogPost,par0,sdjump,
-  #                              y,dist,prior,
-  #                              batch.length=batch.length,batch.n=batch.n,
-  #                              moverate.min=moverate.min,moverate.max=moverate.max,
-  #                              mult.down=mult.down, mult.up=mult.up)
-  # return(out)
+GetHBayLogPost<-function(par,y,dist,prior,SystErrorIndex,SystErrorPrior){
+  # Number of systematic errors gamma
+  Nk=length(SystErrorPrior)
+  # Interpret par
+  theta=par[1:(length(par)-Nk)] # distribution parameters
+  if(Nk>0){
+    gamma=par[(length(par)-Nk+1):(length(par))] # systematic errors
+    if(any(gamma<=0)){return(NA)}
+  } else {
+    gamma=NULL
+  }
+  # Priors------
+  prior=GetLogPrior(theta,prior)
+  if(Nk>0){prior=prior+GetLogPrior(gamma,SystErrorPrior)}
+  
+  # Likelihood-------
+  # Get data type
+  dif=y[,2]-y[,1]
+  if(any(dif<0)){return(NA)}
+  dataType=as.integer(dif>0) # 0=perfectly known, 1=interval
+  # Start computations
+  lkh=0
+  for(k in 0:Nk){
+    indx=which(SystErrorIndex==k)
+    if(length(indx)>0){
+      z=y[indx,]
+      dt=dataType[indx]
+      if(k==0) {g=1} else {g=gamma[k]}
+      distPar=c(theta[1]/g,theta[2]/g)
+      if(dist=='GEV'){distPar=c(distPar,theta[3])}
+      # Perfectly-known data
+      w=z[dt==0,]
+      if(NROW(w)>0){
+        lkh=lkh+GetLogLikelihood(distPar,w[,1],dist)
+      }
+      # Interval data
+      w=z[dt==1,]
+      if(NROW(w)>0){
+        upper=sapply(w[,2],GetCdf,dist,distPar)
+        lower=sapply(w[,1],GetCdf,dist,distPar)
+        lkh=lkh+sum(log(upper-lower))
+      }
+    }
+  }
+  
+  # Compute post and return ------
+  post=prior+lkh
+  return(post)
 }
