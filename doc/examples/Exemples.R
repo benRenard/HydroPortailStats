@@ -16,7 +16,7 @@ y<-Generate(dist=dist,par=param,n=n) # simulation des données
 h3=Hydro3_Estimation(y=y,dist=dist) # objet "hydro3" contenant tous les résultats
 X11(title="exemple 1: appel minimaliste");Hydro3_Plot(h3) # graphique résumant l'inférence
 # utisation de l'estimation interactive Q=f(T) ou T=f(Q)
-GetQfromT(T=100,H3=h3)
+GetQfromT(RP=100,H3=h3)
 GetTfromQ(q=250,H3=h3)
 
 #------------------------------------------------------------------------------------------
