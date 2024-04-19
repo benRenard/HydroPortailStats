@@ -241,7 +241,7 @@ Hydro3_Estimation<-function(y,dist,Emeth=Emeth_def,Umeth=Umeth_def,
   out$pcdf$cdf=c(rep(p0,sum(mask)),p0+(1-p0)*sapply(xgrid[!mask],GetCdf,dist,w$par))  
   # fill in $quant
   pgrid=sapply(options$Tgrid,T2p,options$p2T,options$invertT)
-  mask=(pgrid<=p0)
+  mask=(pgrid<=p0 | is.na(pgrid))
   np=length(pgrid)
   out$quantile=data.frame(matrix(NA,np,quantile.ncol))
   names(out$quantile)<-names(H3_def_success$quantile)
@@ -249,6 +249,7 @@ Hydro3_Estimation<-function(y,dist,Emeth=Emeth_def,Umeth=Umeth_def,
   out$quantile$p=pgrid
   out$quantile$u=sapply(pgrid,GetReducedVariate,dist)
   out$quantile$q=0
+  out$quantile$q[is.na(pgrid)]=NA
   out$quantile$q[!mask]=sapply((pgrid[!mask]-p0)/(1-p0),GetQuantile,dist,w$par)
   if(options$splitZeros) {out$quantile$q[out$quantile$q<=0]=0}
   # Tests
@@ -290,6 +291,7 @@ Hydro3_Estimation<-function(y,dist,Emeth=Emeth_def,Umeth=Umeth_def,
   Q=matrix(NA,options$nsim,length(pgrid))
   for (i in 1:options$nsim) {
     Q[i,mask]=0
+    Q[i,is.na(pgrid)]=NA
     Q[i,!mask]=sapply((pgrid[!mask]-p0)/(1-p0),GetQuantile,dist,u$sim[i,])
     if(options$splitZeros) {Q[i,Q[i,]<=0]=0}
   }
@@ -354,9 +356,11 @@ Hydro3_Plot<-function(H3,useU=FALSE,lwd=2,cex.lab=2,cex.axis=1.3,pch=19,col="red
   graphics::points(H3$empirical$y,H3$empirical$freq,pch=pch,col=col)
   # quantile plot
   if(H3$u$ok) {
-    yl=c(min(H3$empirical$y,H3$quantile$IC.low),max(H3$empirical$y,H3$quantile$IC.high))
+    yl=c(min(H3$empirical$y,H3$quantile$IC.low,na.rm=TRUE),
+         max(H3$empirical$y,H3$quantile$IC.high,na.rm=TRUE))
   } else{
-    yl=c(min(H3$empirical$y,H3$quantile$q),max(H3$empirical$y,H3$quantile$q))
+    yl=c(min(H3$empirical$y,H3$quantile$q,na.rm=TRUE),
+         max(H3$empirical$y,H3$quantile$q,na.rm=TRUE))
   }
   if(useU) {
     x=H3$quantile$u
