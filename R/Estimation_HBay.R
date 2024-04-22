@@ -9,7 +9,9 @@
 #~* CREE/MODIFIE: 15/04/2024
 #~******************************************************************************
 #~* PRINCIPALES FONCTIONS
-#~*    1. GetEstimate_HBay
+#~*    1. GetEstimate_HBay: Bayesian+MCMC estimation, returns MCMC samples
+#~*    2. Hydro3_HBay: wraps the function above to return an Hydro3 object
+#~*    3. Import_HBayConfig: Imports a configuration folder used by HBay executable
 #~******************************************************************************
 #~* REF.: Neppel, L., Renard, B., Lang, M., Ayral, P. A., Coeur, D., 
 #~*       Gaume, E., … Vinet, F. (2010). Flood frequency analysis using 
@@ -83,7 +85,10 @@
 #' mcmc=GetEstimate_HBay(y=y,dist='GEV',prior=prior,
 #'                       SystErrorIndex=SystErrorIndex,
 #'                       SystErrorPrior=SystErrorPrior,
-#'                       batch.length=25,batch.n=40)
+#'                       # The values below aim at making this example fast to run.
+#'                       # In practice, it is recommended to use the default values
+#'                       # (batch.length=100,batch.n=100) or larger.
+#'                       batch.length=25,batch.n=40) 
 #' par(mfrow=c(2,3));for(i in 1:5){hist(mcmc$x[,i])}
 #' @export
 GetEstimate_HBay<-function(y,dist,prior,
@@ -137,6 +142,222 @@ GetEstimate_HBay<-function(y,dist,prior,
                                mult.down=mult.down, mult.up=mult.up)
   return(out)
 }
+
+
+#' Bayesian estimation using historical data
+#'
+#' Bayesian estimation of a GEV or Gumbel distribution based on a mixed sample containing 
+#' point (i.e. perfectly known) or interval (i.e. known to be within bounds) data.
+#' Systematic errors induced by rating curve errors can also be accounted for. 
+#' Returns an Hydro3 object
+#'
+#' @param y numeric 2-column matrix, data. 
+#'     The first column gives the lower bound, the second column gives the upper bound.
+#'     Where y[i,1]==y[i,2], the value is assumed perfectly known (up to systematic errors, see below).
+#'     Where y[i,1]<y[i,2], the value is assumed to be in the interval [y[i,1];y[i,2]]
+#'     -Inf and +Inf are allowed for data being only right- or left-censored 
+#'     (i.e. values known to be smaller than or larger than some threshold).
+#' @param dist character, distribution name. Only distributions 'GEV' and 'Gumbel' are supported.
+#' @param prior list of lists, prior distributions. For each parameter to be estimated, the prior
+#'     is a list of the form pr=list(dist=..., par=...). See example below.
+#' @param SystErrorIndex integer vector, length NROW(y). Index of systematic errors.
+#'     Rows where SystErrorIndex==k are all affected by the same multiplicative error gamma_k, 
+#'     typically induced by the kth rating curve. SystErrorIndex==0 means no systematic error.
+#'     Should only contain integer values between 0 and N_\{systematic errors\}.
+#' @param SystErrorPrior list of lists,  prior distribution for each systematic error.
+#'     For instance for a systematic error in the range +/- 20\%, you may use a Uniform
+#'     between 0.8 and 1.2, or a triangular distribution with the same bounds and peak at 1.
+#' @param options list, options, see details below.
+#' @param mcmcoptions list, MCMC options, see details below.
+#' @param do.KS,do.MK,do.Pettitt logical, perform KS/MK/Pettitt tests?
+#' @return A list with the following components:
+#'     \item{dist}{character, estimated distribution.}
+#'     \item{ok}{logical, did estimation succeed?}
+#'     \item{err}{integer, error code (0 if ok).}
+#'     \item{message}{error message.}
+#'     \item{empirical}{data frame, sorted data and empirical estimates 
+#'         (nonexceedance frequency, return period and reduced variate). 
+#'         NOTE: interval data are replaced by a value randomly sampled from
+#'         a GEV constrained in this interval. See ?HBay_simGEV.}
+#'     \item{pcdf}{data frame, estimated pdf and cdf}
+#'     \item{quantile}{data frame, estimated quantiles and uncertainty intervals}
+#'     \item{par}{data frame, estimated parameters and uncertainty intervals}
+#'     \item{KS}{list, result of the Kolmogorov-Smirnov test, see ?KS.
+#'         NOTE: interval data are replaced by a value randomly sampled from
+#'         a GEV constrained in this interval. See ?HBay_simGEV.}
+#'     \item{MK}{list, result of the Mann-Kendall test, see ?MK. Same note as KS test.}
+#'     \item{Pettitt}{list, result of the Pettitt test, see ?Pettitt. Same note as KS test.}
+#'     \item{u}{list, parameter uncertainty in the form of a covariance matrix ($cov)
+#'         and simulated parameter replicates ($sim). Also contains error-handling flags 
+#'         $ok, $err and $message.}
+#' @details The argument 'options' allows controlling various properties of the analysis and results.
+#'     It is a list with the following components:
+#'     \itemize{
+#'     \item{FreqFormula, character, formula for computing nonexceedance frequency, see ?GetEmpFreq.}
+#'     \item{pgrid, numeric vector, probabilities defining the x values where pdf f(x) and cdf F(x) 
+#'         are computed. These x values are quantiles from the estimated distribution 
+#'         with probabilities pgrid.}
+#'     \item{Tgrid, numeric vector, return periods where quantile function q(T) is computed.}
+#'     \item{IClevel, numeric, level of uncertainty interval.}
+#'     \item{p2T, numeric, conversion factor between nonexceedance probability p and return period T.
+#'         p=1-1/(p2T*T). Here p2T=1 in general since GEV/Gumbel are applied to annual maxima in general.}
+#'     \item{invertT, logical, when invertT=TRUE, LARGE return periods correspond to SMALL data values.
+#'         This is typically used for low-flow statistics. Unused here.}
+#'     \item{splitZeros, logical, when splitZeros=TRUE zero and negative values are removed from the data y before 
+#'         estimating the distribution,and are used to estimate the probability of zeros p0. This is 
+#'         typically used for low-flow statistics to estimate the probability of zero streamflow. Unused here.}
+#'     \item{lang, chanracter, language ('fr' or 'en').}
+#'     \item{nsim, integer, number of replicated parameters representing uncertainty. Unused here (derives from mcmc options)}
+#'     }
+#'     The argument 'mcmcoptions' is a list controlling MCMC properties: 
+#'     \itemize{
+#'     \item{mult, numeric, see ?Metropolis_OAAT_adaptive}
+#'     \item{eps, numeric, see ?Metropolis_OAAT_adaptive}
+#'     \item{batch.length, integer, see ?Metropolis_OAAT_adaptive}
+#'     \item{batch.n, integer, see ?Metropolis_OAAT_adaptive}
+#'     \item{moverate.min, numeric, see ?Metropolis_OAAT_adaptive}
+#'     \item{moverate.max, numeric, see ?Metropolis_OAAT_adaptive}
+#'     \item{mult.down, numeric, see ?Metropolis_OAAT_adaptive}
+#'     \item{mult.up, numeric, see ?Metropolis_OAAT_adaptive}
+#'     \item{burn, numeric, burn-in factor, e.g. if burn=0.2 the first 20 percents of MCMC samples are discarded}
+#'     \item{slim, integer, sliming factor, e.g. if slim=5 only one MCMC sample every 5 is kept (after burn-in)}
+#'     }
+#' @examples
+#' set.seed(98765)
+#' y0=Generate('GEV',c(100,50,-0.2),100)
+#' y=cbind(y0,y0)
+#' # Mimics censoring between 0 and 300 for first 70 years
+#' y[1:70,1][y0[1:70]<300]=0
+#' y[1:70,2][y0[1:70]<300]=300
+#' plot(y[,1]);points(y[,2])
+#' # Systematoc errors
+#' SystErrorIndex=c(rep(1,70),rep(2,30))
+#' SystErrorPrior=list(list(dist="Triangle",par=c(1,0.7,1.3)),
+#'                     list(dist="Triangle",par=c(1,0.95,1.05)))
+#' # Priors on GEV parameters
+#' prior=list(list(dist="FlatPrior",par=NULL),
+#'            list(dist="FlatPrior",par=NULL),
+#'            list(dist="Normal",par=c(0,0.25)))
+#' # Handle MCMC options
+#' # The values below aim at making this example fast to run.
+#' # In practice, it is recommended to use the default values
+#' # (batch.length=100,batch.n=100) or larger.
+#' mcmcoptions=mcmcoptions_def
+#' mcmcoptions$batch.length=25
+#' mcmcoptions$batch.n=40
+#' # Go!
+#' H3=Hydro3_HBay(y=y,dist='GEV',prior=prior,
+#'                SystErrorIndex=SystErrorIndex,
+#'                SystErrorPrior=SystErrorPrior,
+#'                mcmcoptions=mcmcoptions) 
+#' Hydro3_Plot(H3)
+#' @export
+Hydro3_HBay <- function(y,dist,prior=GetDefaultPrior(GetParNumber(dist)),
+                        SystErrorIndex=rep(0,NROW(y)),SystErrorPrior=list(),
+                        options=options_def,mcmcoptions=mcmcoptions_def,
+                        do.KS=TRUE,do.MK=TRUE,do.Pettitt=TRUE){
+  # get MCMC samples
+  mcmc=GetEstimate_HBay(y=y,dist=dist,prior=prior,
+                        SystErrorIndex=SystErrorIndex,SystErrorPrior=SystErrorPrior,
+                        mult=mcmcoptions$mult,eps=mcmcoptions$eps,
+                        batch.length=mcmcoptions$batch.length,batch.n=mcmcoptions$batch.n,
+                        moverate.min=mcmcoptions$moverate.min,moverate.max=mcmcoptions$moverate.max,
+                        mult.down=mcmcoptions$mult.down, mult.up=mcmcoptions$mult.up)
+  
+  # build H3 object ----
+  par.ncol=8
+  empirical.ncol=4
+  pcdf.ncol=3
+  quantile.ncol=6
+  out=H3_def_success
+  out$dist=dist
+  w=GetMode(mcmc)
+  if(w$ok==FALSE) {out=H3_def_fail;out$message="estimation:echec";return(out)}
+  # fill in $par
+  nDpar=GetParNumber(dist)
+  npar=NCOL(mcmc$x)
+  out$par=data.frame(matrix(NA,npar,par.ncol))
+  names(out$par)<-names(H3_def_success$par)
+  out$par$index=1:npar
+  if(nDpar==npar){
+    out$par$name=GetParName(dist,options$lang)
+  } else {
+    out$par$name=c(GetParName(dist,options$lang),
+                  paste0('SystError_',1:(npar-nDpar)))
+  }
+  out$par$estimate=w$par
+  # fill in $empirical
+  ny=NROW(y)
+  out$empirical=data.frame(matrix(NA,ny,empirical.ncol))
+  names(out$empirical)<-names(H3_def_success$empirical)
+  # Generate one possible replication for interval data
+  y_oneRep=y[,1]
+  ny=NROW(y)
+  for (i in 1:ny){
+    if(y[i,2]>y[i,1]){
+      y_oneRep[i]=GenerateWithinBounds(dist=dist,par=out$par$estimate,n=1,
+                                       lowerBound=y[i,1],higherBound=y[i,2])
+    }
+  }
+  out$empirical$y=sort(y_oneRep)
+  out$empirical$freq=sapply(1:ny,GetEmpFreq,ny,options$FreqFormula)
+  out$empirical$T=sapply(out$empirical$freq,p2T,options$p2T,options$invertT)
+  out$empirical$u=sapply(out$empirical$freq,GetReducedVariate,dist)
+  # fill in $pcdf
+  xgrid=sapply(options$pgrid,GetQuantile,dist,w$par)
+  nx=length(xgrid)
+  out$pcdf=data.frame(matrix(NA,nx,pcdf.ncol))
+  names(out$pcdf)<-names(H3_def_success$pcdf)
+  out$pcdf$x=xgrid
+  out$pcdf$pdf=sapply(xgrid,GetPdf,dist,w$par)
+  out$pcdf$cdf=sapply(xgrid,GetCdf,dist,w$par)
+  # fill in $quant
+  pgrid=sapply(options$Tgrid,T2p,options$p2T,options$invertT)
+  np=length(pgrid)
+  out$quantile=data.frame(matrix(NA,np,quantile.ncol))
+  names(out$quantile)<-names(H3_def_success$quantile)
+  out$quantile$T=options$Tgrid
+  out$quantile$p=pgrid
+  out$quantile$u=sapply(pgrid,GetReducedVariate,dist)
+  out$quantile$q=sapply(pgrid,GetQuantile,dist,w$par)
+  # Tests
+  if(do.KS){out$KS=KS(y=y_oneRep,dist=dist,par=w$par)}
+  if(do.MK){out$MK=MK(y=y_oneRep)}
+  if(do.Pettitt){out$Pettitt=Pettitt(y=y_oneRep)}
+  
+  # Uncertainties ----
+  u=GetUncertainty(mcmc,burn=mcmcoptions$burn,slim=mcmcoptions$slim)
+  if(u$ok==TRUE){
+    # actually not ok if simulated pars encompass infinity
+    if( any(is.infinite(u$sim)) ) {u$ok=FALSE}
+  }
+  if(u$ok==FALSE) {
+    out$err=u$err
+    out$message=paste("incertitude:echec:",u$message,sep="")
+    out$u=Uncertainty_fail
+    return(out)
+  }
+  # fill in $par
+  out$u=u
+  out$par$mean=apply(u$sim,2,mean,na.rm=TRUE)
+  out$par$median=apply(u$sim,2,stats::median,na.rm=TRUE)
+  out$par$sdev=apply(u$sim,2,stats::sd,na.rm=TRUE)
+  out$par$IC.low=apply(u$sim,2,stats::quantile,probs=0.5*(1-options$IClevel),na.rm=TRUE)
+  out$par$IC.high=apply(u$sim,2,stats::quantile,probs=1-0.5*(1-options$IClevel),na.rm=TRUE)
+  # fill in $quantile
+  Q=matrix(NA,NROW(u$sim),length(pgrid))
+  for (i in 1:NROW(u$sim)) {
+    Q[i,]=sapply(pgrid,GetQuantile,dist,u$sim[i,])
+  }
+  out$quantile$IC.low=apply(Q,2,stats::quantile,probs=0.5*(1-options$IClevel),na.rm=TRUE)
+  out$quantile$IC.high=apply(Q,2,stats::quantile,probs=1-0.5*(1-options$IClevel),na.rm=TRUE)
+  
+  return(out)
+}
+
+#****************************
+# Fonctions privées ----
+#****************************
 
 GetHBayLogPost<-function(par,y,dist,prior,SystErrorIndex,SystErrorPrior){
   # Number of systematic errors gamma

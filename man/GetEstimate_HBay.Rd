@@ -95,6 +95,9 @@ prior=list(list(dist="FlatPrior",par=NULL),
 mcmc=GetEstimate_HBay(y=y,dist='GEV',prior=prior,
                       SystErrorIndex=SystErrorIndex,
                       SystErrorPrior=SystErrorPrior,
-                      batch.length=25,batch.n=40)
+                      # The values below aim at making this example fast to run.
+                      # In practice, it is recommended to use the default values
+                      # (batch.length=100,batch.n=100) or larger.
+                      batch.length=25,batch.n=40) 
 par(mfrow=c(2,3));for(i in 1:5){hist(mcmc$x[,i])}
 }

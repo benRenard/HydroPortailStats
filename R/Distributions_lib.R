@@ -465,6 +465,37 @@ Generate<-function(dist,par,n=1){
            NA)
   return(r)}
 
+#' Constrained random numbers generator
+#'
+#' Generate random realizations from a distribution, 
+#' constraining these realizations to stay within bounds.
+#'
+#' @param dist character, distribution name
+#' @param par numeric vector, parameter vector
+#' @param n integer, number of values to generate
+#' @param lowerBound Numeric, lower bound
+#' @param higherBound Numeric, higher bound, should be strictly larger than the lower bound
+#' @return The generated values as a numeric vector.
+#' @examples
+#' set.seed(123456)
+#' y0=GenerateWithinBounds(dist='GEV',par=c(0,1,-0.2),n=1000)
+#' y1=GenerateWithinBounds(dist='Normal',par=c(0,1,-0.2),n=1000,lowerBound=0,higherBound=5)
+#' plot(y0);points(y1,col='red')
+#' @export
+GenerateWithinBounds<-function(dist,par,n=1,lowerBound=-Inf,higherBound=Inf){
+  if(!GetParFeas(dist,par)){return(NA)}
+  if(higherBound<=lowerBound){
+    message('Fatal: bounds are not in increasing order')
+    return(NA)
+  }
+  u0=runif(n) # uniform numbers in (0;1)
+  pLow=GetCdf(lowerBound,dist,par) # nonexceedance prob associated with lower bound
+  pHigh=GetCdf(higherBound,dist,par) # nonexceedance prob associated with higher bound
+  u=pLow+u0*(pHigh-pLow) # rescale u0 between plow and phigh
+  out=sapply(u,GetQuantile,dist=dist,par=par) # generate values from GEV
+  return(out)
+}
+
 #' Reduced variate
 #'
 #' Returns the 'reduced variate' that is used in some quantile plots 
