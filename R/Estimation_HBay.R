@@ -355,6 +355,133 @@ Hydro3_HBay <- function(y,dist,prior=GetDefaultPrior(GetParNumber(dist)),
   return(out)
 }
 
+
+#' Import HBay Configuration folder
+#'
+#' Imports configuration data as specified with HBay executable.
+#' Returns NULL if configuration folder is not found
+#'
+#' @param path character, path to configuration folder. 
+#' @param dist character, distribution name. Only distributions 'GEV' and 'Gumbel' are supported.
+#' @param prior list of lists, prior distributions. For each parameter to be estimated, the prior
+#'     is a list of the form pr=list(dist=..., par=...). See example below.
+#' @param SystErrorIndex integer vector, length NROW(y). Index of systematic errors.
+#'     Rows where SystErrorIndex==k are all affected by the same multiplicative error gamma_k, 
+#'     typically induced by the kth rating curve. SystErrorIndex==0 means no systematic error.
+#'     Should only contain integer values between 0 and N_\{systematic errors\}.
+#' @param SystErrorPrior list of lists,  prior distribution for each systematic error.
+#'     For instance for a systematic error in the range +/- 20\%, you may use a Uniform
+#'     between 0.8 and 1.2, or a triangular distribution with the same bounds and peak at 1.
+#' @param options list, options, see details below.
+#' @param mcmcoptions list, MCMC options, see details below.
+#' @param do.KS,do.MK,do.Pettitt logical, perform KS/MK/Pettitt tests?
+#' @return A list with the following components (see ?Hydro3_HBay for details):
+#'     \item{y}{numeric matrix, data.}
+#'     \item{dist}{character, distribution name.}
+#'     \item{prior}{list of lists, prior distributions.}
+#'     \item{SystErrorIndex}{integer vector, index of systematic errors.}
+#'     \item{SystErrorPrior}{list of lists, prior distribution for each systematic error.}
+#'     \item{options}{list, inference options.}
+#'     \item{mcmcoptions}{list, MCMC options.}
+#'     \item{year}{numeric vector, years.}
+#' @examples
+#' config=Import_HBayConfig('path/to/config')
+#' if(!is.null(config)){
+#'   H3=Hydro3_HBay(y=config$y,dist=config$dist,prior=config$prior,
+#'                SystErrorIndex=config$SystErrorIndex,
+#'                SystErrorPrior=config$SystErrorPrior,
+#'                options=config$options,
+#'                mcmcoptions=config$mcmcoptions)
+#'   Hydro3_Plot(H3)
+#' }
+#' @export
+Import_HBayConfig <- function(path){
+  if(!dir.exists(path)){
+    message(paste0('folder not found: ',path))
+    return(NULL)
+  }
+  folder=strsplit(path,.Platform$file.sep)[[1]]
+  folder=folder[length(folder)]
+  
+  # Read Config_data
+  foo=readLines(file.path(path,'Config_Data.txt'),n=1)
+  foo=strsplit(foo,'!')[[1]][1] # remove end-of-line comment
+  foosplit=strsplit(foo,'[/\\]')[[1]] # split at windows or unix separators
+  if(length(foosplit)==1){ # implicit path is used
+    fname=file.path(path,foosplit)
+  } else if(foosplit[1]==folder){ # implicit path is used
+    fname=file.path(path,do.call(file.path,as.list(foosplit[2:length(foosplit)])))
+  } else { # full path is used
+    fname=foo
+  }
+
+  # Read data
+  D=read.table(fname,header=TRUE)
+  year=D[,1]
+  SystErrorIndex=D[,9]
+  y=matrix(NA,NROW(D),2)
+  mask=D[,2]==0;y[mask,1]=D[mask,3];y[mask,2]=D[mask,3] # "equal-to" data
+  mask=D[,2]==1;y[mask,1]=-Inf;     y[mask,2]=D[mask,4] # "smaller-than" data
+  mask=D[,2]==2;y[mask,1]=D[mask,5];y[mask,2]=Inf       # "larger-than" data
+  mask=D[,2]==3;y[mask,1]=D[mask,6];y[mask,2]=D[mask,7] # "between" data
+  y[y==-9999]=NA # replace NA codes with actual NA's
+  # remove NA's
+  mask=stats::complete.cases(y)
+  year=year[mask]
+  SystErrorIndex=SystErrorIndex[mask]
+  y=y[mask,]
+  
+  # read Config_MCMC
+  D=read.table(file.path(path,'Config_MCMC.txt'),header=FALSE,comment.char='!')
+  mcmcoptions=mcmcoptions_def
+  mcmcoptions$batch.length=D[1,1]
+  mcmcoptions$batch.n=D[2,1]
+  mcmcoptions$burn=D[3,1]
+  mcmcoptions$slim=D[4,1]
+  mcmcoptions$moverate.min=D[6,1]
+  mcmcoptions$moverate.max=D[7,1]
+  mcmcoptions$mult.down=D[8,1]
+  mcmcoptions$mult.up=D[9,1]
+  mcmcoptions$mult=D[10,1]
+  mcmcoptions$eps=D[11,1]
+  
+  # read Config_Inference
+  D=read.table(file.path(path,'Config_Inference.txt'),header=FALSE,comment.char='!',blank.lines.skip=FALSE)
+  dist=as.character(D[1,1])
+  prior=list()
+  prior[[1]]=readOnePrior(D[2:4,1])
+  prior[[2]]=readOnePrior(D[5:7,1])
+  if(dist=='GEV'){
+    prior[[3]]=readOnePrior(D[8:10,1])
+  }
+  
+  # read Config_SystematicErrors
+  D=read.table(file.path(path,'Config_SystematicErrors.txt'),header=FALSE,comment.char='!',blank.lines.skip=FALSE)
+  nK=max(SystErrorIndex)
+  SystErrorPrior=list()
+  if(nK>0){
+    for(i in 1:nK){
+      SystErrorPrior[[i]]=readOnePrior(D[3*(i-1)+(1:3),1])
+    }
+  }
+  
+  # read Config_ResultOptions
+  D=read.table(file.path(path,'Config_ResultOptions.txt'),header=FALSE,comment.char='!',blank.lines.skip=FALSE)
+  options=options_def
+  pmin=as.numeric(D[1,1])
+  pmax=as.numeric(D[2,1])
+  pn=as.numeric(D[3,1])
+  options$pgrid=seq(pmin,pmax,length.out=pn)
+  options$FreqFormula=as.character(D[4,1])
+  options$IClevel=as.numeric(D[9,1])
+  options$p2T=as.numeric(D[10,1])
+  
+  return(list(y=y,dist=dist,prior=prior,
+              SystErrorIndex=SystErrorIndex,SystErrorPrior=SystErrorPrior,
+              options=options,mcmcoptions=mcmcoptions,
+              year=year))
+}
+
 #****************************
 # Fonctions privées ----
 #****************************
@@ -384,18 +511,18 @@ GetHBayLogPost<-function(par,y,dist,prior,SystErrorIndex,SystErrorPrior){
   for(k in 0:Nk){
     indx=which(SystErrorIndex==k)
     if(length(indx)>0){
-      z=y[indx,]
+      z=matrix(y[indx,],ncol=2) # make sure this stays a 2-column matrix
       dt=dataType[indx]
       if(k==0) {g=1} else {g=gamma[k]}
       distPar=c(theta[1]/g,theta[2]/g)
       if(dist=='GEV'){distPar=c(distPar,theta[3])}
       # Perfectly-known data
-      w=z[dt==0,]
+      w=matrix(z[dt==0,],ncol=2)
       if(NROW(w)>0){
         lkh=lkh+GetLogLikelihood(distPar,w[,1],dist)
       }
       # Interval data
-      w=z[dt==1,]
+      w=matrix(z[dt==1,],ncol=2)
       if(NROW(w)>0){
         upper=sapply(w[,2],GetCdf,dist,distPar)
         lower=sapply(w[,1],GetCdf,dist,distPar)
@@ -407,4 +534,17 @@ GetHBayLogPost<-function(par,y,dist,prior,SystErrorIndex,SystErrorPrior){
   # Compute post and return ------
   post=prior+lkh
   return(post)
+}
+
+readOnePrior <- function(threeLines){
+  dist=as.character(threeLines[2])
+  if(dist=='Gaussian') dist='Normal'
+  if(dist %in% c('FlatPrior+','FlatPrior-')) dist='FlatPrior'
+  param=strsplit(as.character(threeLines[3]),',')[[1]]
+  if(length(param)==0){
+    pars=NULL
+  } else {
+    pars=as.numeric(param)
+  }
+  return(list(dist=dist,par=pars))
 }
