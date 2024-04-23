@@ -1,0 +1,12 @@
+1
+samples.bay_mc2
+1
+parameters.bay_par
+1
+pdf.bay_pdf
+1
+cdf.bay_cdf
+1
+predictive.bay_prd
+1
+quantiles.bay_qtl

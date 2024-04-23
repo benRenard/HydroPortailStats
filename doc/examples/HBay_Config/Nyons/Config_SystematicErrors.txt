@@ -1,0 +1,9 @@
+RC1
+Triangle
+1,0.7,1.3
+RC2
+Triangle
+1,0.80,1.20
+RC3
+Triangle
+1,0.9,1.1
