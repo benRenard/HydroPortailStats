@@ -115,7 +115,7 @@ y=cbind(y0,y0)
 y[1:70,1][y0[1:70]<300]=0
 y[1:70,2][y0[1:70]<300]=300
 plot(y[,1]);points(y[,2])
-# Systematoc errors
+# Systematic errors
 SystErrorIndex=c(rep(1,70),rep(2,30))
 SystErrorPrior=list(list(dist="Triangle",par=c(1,0.7,1.3)),
                     list(dist="Triangle",par=c(1,0.95,1.05)))

@@ -230,7 +230,7 @@ GetEstimate_HBay<-function(y,dist,prior,
 #' y[1:70,1][y0[1:70]<300]=0
 #' y[1:70,2][y0[1:70]<300]=300
 #' plot(y[,1]);points(y[,2])
-#' # Systematoc errors
+#' # Systematic errors
 #' SystErrorIndex=c(rep(1,70),rep(2,30))
 #' SystErrorPrior=list(list(dist="Triangle",par=c(1,0.7,1.3)),
 #'                     list(dist="Triangle",par=c(1,0.95,1.05)))
@@ -299,7 +299,9 @@ Hydro3_HBay <- function(y,dist,prior=GetDefaultPrior(GetParNumber(dist)),
                                        lowerBound=y[i,1],higherBound=y[i,2])
     }
   }
-  out$empirical$y=sort(y_oneRep)
+  foo=sort.int(y_oneRep,index.return=TRUE)
+  ixEmpirical=foo$ix
+  out$empirical$y=foo$x
   out$empirical$freq=sapply(1:ny,GetEmpFreq,ny,options$FreqFormula)
   out$empirical$T=sapply(out$empirical$freq,p2T,options$p2T,options$invertT)
   out$empirical$u=sapply(out$empirical$freq,GetReducedVariate,dist)
@@ -351,6 +353,11 @@ Hydro3_HBay <- function(y,dist,prior=GetDefaultPrior(GetParNumber(dist)),
   }
   out$quantile$IC.low=apply(Q,2,stats::quantile,probs=0.5*(1-options$IClevel),na.rm=TRUE)
   out$quantile$IC.high=apply(Q,2,stats::quantile,probs=1-0.5*(1-options$IClevel),na.rm=TRUE)
+  
+  # Additional fields, not in regular H3 object
+  out$y=y
+  out$SystErrorIndex=SystErrorIndex
+  out$ixEmpirical=ixEmpirical
   
   return(out)
 }
@@ -480,6 +487,60 @@ Import_HBayConfig <- function(path){
               SystErrorIndex=SystErrorIndex,SystErrorPrior=SystErrorPrior,
               options=options,mcmcoptions=mcmcoptions,
               year=year))
+}
+#' HBay plot
+#'
+#' Plot summarizing the results of Hydro3_HBay()
+#'
+#' @param H3 list, resulting from a call to Hydro3_HBay()
+#' @param curve_color color, color used for quantile curve
+#' @return nothing (just creates a plot)
+#' @examples
+#' set.seed(98765)
+#' y0=Generate('GEV',c(100,50,-0.2),100)
+#' y=cbind(y0,y0)
+#' # Mimics censoring between 0 and 300 for first 70 years
+#' y[1:70,1][y0[1:70]<300]=0
+#' y[1:70,2][y0[1:70]<300]=300
+#' plot(y[,1]);points(y[,2])
+#' # Systematic errors
+#' SystErrorIndex=c(rep(1,50),rep(2,20),rep(0,30))
+#' SystErrorPrior=list(list(dist="Triangle",par=c(1,0.7,1.3)),
+#'                     list(dist="Triangle",par=c(1,0.95,1.05)))
+#' # Priors on GEV parameters
+#' prior=list(list(dist="FlatPrior",par=NULL),
+#'            list(dist="FlatPrior",par=NULL),
+#'            list(dist="Normal",par=c(0,0.25)))
+#' # Handle MCMC options
+#' # The values below aim at making this example fast to run.
+#' # In practice, it is recommended to use the default values
+#' # (batch.length=100,batch.n=100) or larger.
+#' mcmcoptions=mcmcoptions_def
+#' mcmcoptions$batch.length=25
+#' mcmcoptions$batch.n=40
+#' # Go!
+#' H3=Hydro3_HBay(y=y,dist='GEV',prior=prior,
+#'                SystErrorIndex=SystErrorIndex,
+#'                SystErrorPrior=SystErrorPrior,
+#'                mcmcoptions=mcmcoptions) 
+#' # HBay plot
+#' HBay_Plot(H3)
+#' @importFrom graphics plot lines points legend
+#' @export
+HBay_Plot <- function(H3,curve_color='black'){
+  mini=min(H3$quantile$IC.low)
+  maxi=max(H3$quantile$IC.high)
+  graphics::plot(H3$quantile$T,H3$quantile$q,type='l',lwd=2,ylim=c(mini,maxi),log='x',
+       xlab='T',ylab='Q(T)',col=curve_color)
+  graphics::lines(H3$quantile$T,H3$quantile$IC.low,lty=2,col=curve_color)
+  graphics::lines(H3$quantile$T,H3$quantile$IC.high,lty=2,col=curve_color)
+  graphics::segments(H3$empirical$T,H3$y[H3$ixEmpirical,1],
+                     H3$empirical$T,H3$y[H3$ixEmpirical,2],
+                     col=H3$SystErrorIndex[H3$ixEmpirical]+2)
+  graphics::points(H3$empirical$T,H3$empirical$y,
+                   pch=19,col=H3$SystErrorIndex[H3$ixEmpirical]+2)
+  graphics::legend('topleft',paste('Systematic error',0:max(H3$SystErrorIndex)),
+         pch=19,col = 2+(0:max(H3$SystErrorIndex)))
 }
 
 #****************************
