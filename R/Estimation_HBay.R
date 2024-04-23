@@ -362,26 +362,12 @@ Hydro3_HBay <- function(y,dist,prior=GetDefaultPrior(GetParNumber(dist)),
   return(out)
 }
 
-
 #' Import HBay Configuration folder
 #'
 #' Imports configuration data as specified with HBay executable.
 #' Returns NULL if configuration folder is not found
 #'
 #' @param path character, path to configuration folder. 
-#' @param dist character, distribution name. Only distributions 'GEV' and 'Gumbel' are supported.
-#' @param prior list of lists, prior distributions. For each parameter to be estimated, the prior
-#'     is a list of the form pr=list(dist=..., par=...). See example below.
-#' @param SystErrorIndex integer vector, length NROW(y). Index of systematic errors.
-#'     Rows where SystErrorIndex==k are all affected by the same multiplicative error gamma_k, 
-#'     typically induced by the kth rating curve. SystErrorIndex==0 means no systematic error.
-#'     Should only contain integer values between 0 and N_\{systematic errors\}.
-#' @param SystErrorPrior list of lists,  prior distribution for each systematic error.
-#'     For instance for a systematic error in the range +/- 20\%, you may use a Uniform
-#'     between 0.8 and 1.2, or a triangular distribution with the same bounds and peak at 1.
-#' @param options list, options, see details below.
-#' @param mcmcoptions list, MCMC options, see details below.
-#' @param do.KS,do.MK,do.Pettitt logical, perform KS/MK/Pettitt tests?
 #' @return A list with the following components (see ?Hydro3_HBay for details):
 #'     \item{y}{numeric matrix, data.}
 #'     \item{dist}{character, distribution name.}
@@ -401,6 +387,7 @@ Hydro3_HBay <- function(y,dist,prior=GetDefaultPrior(GetParNumber(dist)),
 #'                mcmcoptions=config$mcmcoptions)
 #'   Hydro3_Plot(H3)
 #' }
+#' @importFrom utils read.table
 #' @export
 Import_HBayConfig <- function(path){
   if(!dir.exists(path)){
@@ -423,7 +410,7 @@ Import_HBayConfig <- function(path){
   }
 
   # Read data
-  D=read.table(fname,header=TRUE)
+  D=utils::read.table(fname,header=TRUE)
   year=D[,1]
   SystErrorIndex=D[,9]
   y=matrix(NA,NROW(D),2)
@@ -439,7 +426,7 @@ Import_HBayConfig <- function(path){
   y=y[mask,]
   
   # read Config_MCMC
-  D=read.table(file.path(path,'Config_MCMC.txt'),header=FALSE,comment.char='!')
+  D=utils::read.table(file.path(path,'Config_MCMC.txt'),header=FALSE,comment.char='!')
   mcmcoptions=mcmcoptions_def
   mcmcoptions$batch.length=D[1,1]
   mcmcoptions$batch.n=D[2,1]
@@ -453,7 +440,7 @@ Import_HBayConfig <- function(path){
   mcmcoptions$eps=D[11,1]
   
   # read Config_Inference
-  D=read.table(file.path(path,'Config_Inference.txt'),header=FALSE,comment.char='!',blank.lines.skip=FALSE)
+  D=utils::read.table(file.path(path,'Config_Inference.txt'),header=FALSE,comment.char='!',blank.lines.skip=FALSE)
   dist=as.character(D[1,1])
   prior=list()
   prior[[1]]=readOnePrior(D[2:4,1])
@@ -463,7 +450,7 @@ Import_HBayConfig <- function(path){
   }
   
   # read Config_SystematicErrors
-  D=read.table(file.path(path,'Config_SystematicErrors.txt'),header=FALSE,comment.char='!',blank.lines.skip=FALSE)
+  D=utils::read.table(file.path(path,'Config_SystematicErrors.txt'),header=FALSE,comment.char='!',blank.lines.skip=FALSE)
   nK=max(SystErrorIndex)
   SystErrorPrior=list()
   if(nK>0){
@@ -473,7 +460,7 @@ Import_HBayConfig <- function(path){
   }
   
   # read Config_ResultOptions
-  D=read.table(file.path(path,'Config_ResultOptions.txt'),header=FALSE,comment.char='!',blank.lines.skip=FALSE)
+  D=utils::read.table(file.path(path,'Config_ResultOptions.txt'),header=FALSE,comment.char='!',blank.lines.skip=FALSE)
   options=options_def
   pmin=as.numeric(D[1,1])
   pmax=as.numeric(D[2,1])

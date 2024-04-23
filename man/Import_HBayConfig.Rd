@@ -8,26 +8,6 @@ Import_HBayConfig(path)
 }
 \arguments{
 \item{path}{character, path to configuration folder.}
-
-\item{dist}{character, distribution name. Only distributions 'GEV' and 'Gumbel' are supported.}
-
-\item{prior}{list of lists, prior distributions. For each parameter to be estimated, the prior
-is a list of the form pr=list(dist=..., par=...). See example below.}
-
-\item{SystErrorIndex}{integer vector, length NROW(y). Index of systematic errors.
-Rows where SystErrorIndex==k are all affected by the same multiplicative error gamma_k, 
-typically induced by the kth rating curve. SystErrorIndex==0 means no systematic error.
-Should only contain integer values between 0 and N_\{systematic errors\}.}
-
-\item{SystErrorPrior}{list of lists,  prior distribution for each systematic error.
-For instance for a systematic error in the range +/- 20\%, you may use a Uniform
-between 0.8 and 1.2, or a triangular distribution with the same bounds and peak at 1.}
-
-\item{options}{list, options, see details below.}
-
-\item{mcmcoptions}{list, MCMC options, see details below.}
-
-\item{do.KS, do.MK, do.Pettitt}{logical, perform KS/MK/Pettitt tests?}
 }
 \value{
 A list with the following components (see ?Hydro3_HBay for details):
