@@ -492,7 +492,7 @@ GenerateWithinBounds<-function(dist,par,n=1,lowerBound=-Inf,higherBound=Inf){
   pLow=GetCdf(lowerBound,dist,par) # nonexceedance prob associated with lower bound
   pHigh=GetCdf(higherBound,dist,par) # nonexceedance prob associated with higher bound
   u=pLow+u0*(pHigh-pLow) # rescale u0 between plow and phigh
-  out=sapply(u,GetQuantile,dist=dist,par=par) # generate values from GEV
+  out=sapply(u,GetQuantile,dist=dist,par=par) # transform u into deviates from dist
   return(out)
 }
 
