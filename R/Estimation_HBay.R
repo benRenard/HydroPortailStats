@@ -93,7 +93,8 @@
 #' @export
 GetEstimate_HBay<-function(y,dist,prior,
                            SystErrorIndex=rep(0,NROW(y)),SystErrorPrior=list(),
-                           par0=GetEstimate_ROUGH(0.5*(y[,1]+y[,2]),dist)$par,SystError0=rep(1,length(SystErrorPrior)),
+                           par0=GetEstimate_ROUGH(0.5*(y[,1]+y[,2])[is.finite(y[,1]+y[,2])],dist)$par,
+                           SystError0=rep(1,length(SystErrorPrior)),
                            mult=0.1,eps=0.1,
                            batch.length=100,batch.n=100,
                            moverate.min=0.1,moverate.max=0.5,

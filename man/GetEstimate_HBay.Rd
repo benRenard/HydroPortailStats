@@ -10,7 +10,7 @@ GetEstimate_HBay(
   prior,
   SystErrorIndex = rep(0, NROW(y)),
   SystErrorPrior = list(),
-  par0 = GetEstimate_ROUGH(0.5 * (y[, 1] + y[, 2]), dist)$par,
+  par0 = GetEstimate_ROUGH(0.5 * (y[, 1] + y[, 2])[is.finite(y[, 1] + y[, 2])], dist)$par,
   SystError0 = rep(1, length(SystErrorPrior)),
   mult = 0.1,
   eps = 0.1,
