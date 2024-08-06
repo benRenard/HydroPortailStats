@@ -7,7 +7,7 @@ knitr::opts_chunk$set(echo=TRUE,warning=FALSE,message=FALSE,fig.path = "man/read
 set.seed(654321)
 ```
 
-# HydroPortailStats <a href="https://cran.r-project.org/web/packages/HydroPortailStats/index.html"><img src="man/readme/logo.png" align="right" height="138" /></a>
+# HydroPortailStats <a href="https://cran.r-project.org/package=HydroPortailStats"><img src="man/readme/logo.png" align="right" height="138" /></a>
 
 [![DOI](https://zenodo.org/badge/424274482.svg)](https://zenodo.org/badge/latestdoi/424274482)
 

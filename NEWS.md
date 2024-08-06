@@ -1,6 +1,6 @@
 # HydroPortailStats 1.1.0
 
-* New Feature: estimation using historical flood data, supporting censored/interval data and systematic errors, as described in [Neppel et al., 2007](https://doi.org/10.1080/02626660903546092). This is mostly a re-implementation of the Fortran `HBay` [exectuable](https://github.com/benRenard/BMSL/tree/main/cli/HBay), providing the following functions: `Hydro3_HBay()` to perform Bayesian estimation, `HBay_Plot()` to plot the result of the former function, and `Import_HBayConfig()` to import configuration files that were used by the `HBay` executable.
+* New Feature: estimation using historical flood data, supporting censored/interval data and systematic errors, as described in [Neppel et al., 2007](https://hal.science/hal-00509088). This is mostly a re-implementation of the Fortran `HBay` [exectuable](https://github.com/benRenard/BMSL/tree/main/cli/HBay), providing the following functions: `Hydro3_HBay()` to perform Bayesian estimation, `HBay_Plot()` to plot the result of the former function, and `Import_HBayConfig()` to import configuration files that were used by the `HBay` executable.
 * New Feature: new distribution 'Triangle' available in distribution library
 * New Feature: new function `GenerateWithinBounds()` to generate random values from a truncated distribution
 * Bug fix: `Hydro3_Estimation()` was not handling p-to-T conversion properly when options$p2T<1.
