@@ -77,14 +77,15 @@ Returns MCMC samples from the posterior distribution.
 }
 \examples{
 set.seed(98765)
-y0=Generate('GEV',c(100,50,-0.2),100)
+n=50;n_censored=30
+y0=Generate('GEV',c(100,50,-0.2),n)
 y=cbind(y0,y0)
-# Mimics censoring between 0 and 300 for first 70 years
-y[1:70,1][y0[1:70]<300]=0
-y[1:70,2][y0[1:70]<300]=300
+# Mimics censoring between 0 and 300 for first n_censored years
+y[1:n_censored,1][y0[1:n_censored]<300]=0
+y[1:n_censored,2][y0[1:n_censored]<300]=300
 plot(y[,1]);points(y[,2])
-# Systematoc errors
-SystErrorIndex=c(rep(1,70),rep(2,30))
+# Systematic errors
+SystErrorIndex=c(rep(1,n_censored),rep(2,n-n_censored))
 SystErrorPrior=list(list(dist="Triangle",par=c(1,0.7,1.3)),
                     list(dist="Triangle",par=c(1,0.95,1.05)))
 # Priors on GEV parameters
@@ -98,6 +99,8 @@ mcmc=GetEstimate_HBay(y=y,dist='GEV',prior=prior,
                       # The values below aim at making this example fast to run.
                       # In practice, it is recommended to use the default values
                       # (batch.length=100,batch.n=100) or larger.
-                      batch.length=25,batch.n=40) 
-par(mfrow=c(2,3));for(i in 1:5){hist(mcmc$x[,i])}
+                      batch.length=25,batch.n=20) 
+graphicalpar=par(mfrow=c(2,3))
+for(i in 1:5){hist(mcmc$x[,i])}
+par(graphicalpar)
 }

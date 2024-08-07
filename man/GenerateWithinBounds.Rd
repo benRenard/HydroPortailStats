@@ -27,6 +27,6 @@ constraining these realizations to stay within bounds.
 \examples{
 set.seed(123456)
 y0=GenerateWithinBounds(dist='GEV',par=c(0,1,-0.2),n=1000)
-y1=GenerateWithinBounds(dist='Normal',par=c(0,1,-0.2),n=1000,lowerBound=0,higherBound=5)
+y1=GenerateWithinBounds(dist='GEV',par=c(0,1,-0.2),n=1000,lowerBound=0,higherBound=5)
 plot(y0);points(y1,col='red')
 }

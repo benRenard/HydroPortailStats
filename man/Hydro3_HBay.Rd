@@ -54,7 +54,7 @@ A list with the following components:
     \item{empirical}{data frame, sorted data and empirical estimates 
         (nonexceedance frequency, return period and reduced variate). 
         NOTE: interval data are replaced by a value randomly sampled from
-        a GEV constrained in this interval. See ?HBay_simGEV.}
+        a GEV constrained in this interval. See ?GenerateWithinBounds.}
     \item{pcdf}{data frame, estimated pdf and cdf}
     \item{quantile}{data frame, estimated quantiles and uncertainty intervals}
     \item{par}{data frame, estimated parameters and uncertainty intervals}
@@ -109,14 +109,15 @@ The argument 'options' allows controlling various properties of the analysis and
 }
 \examples{
 set.seed(98765)
-y0=Generate('GEV',c(100,50,-0.2),100)
+n=50;n_censored=30
+y0=Generate('GEV',c(100,50,-0.2),n)
 y=cbind(y0,y0)
-# Mimics censoring between 0 and 300 for first 70 years
-y[1:70,1][y0[1:70]<300]=0
-y[1:70,2][y0[1:70]<300]=300
+# Mimics censoring between 0 and 300 for first n_censored years
+y[1:n_censored,1][y0[1:n_censored]<300]=0
+y[1:n_censored,2][y0[1:n_censored]<300]=300
 plot(y[,1]);points(y[,2])
 # Systematic errors
-SystErrorIndex=c(rep(1,70),rep(2,30))
+SystErrorIndex=c(rep(1,n_censored),rep(2,n-n_censored))
 SystErrorPrior=list(list(dist="Triangle",par=c(1,0.7,1.3)),
                     list(dist="Triangle",par=c(1,0.95,1.05)))
 # Priors on GEV parameters
@@ -129,7 +130,7 @@ prior=list(list(dist="FlatPrior",par=NULL),
 # (batch.length=100,batch.n=100) or larger.
 mcmcoptions=mcmcoptions_def
 mcmcoptions$batch.length=25
-mcmcoptions$batch.n=40
+mcmcoptions$batch.n=20
 # Go!
 H3=Hydro3_HBay(y=y,dist='GEV',prior=prior,
                SystErrorIndex=SystErrorIndex,

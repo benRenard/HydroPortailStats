@@ -1,7 +1,7 @@
 Package: HydroPortailStats
 Type: Package
 Title: 'HydroPortail' Statistical Functions
-Version: 1.0.3
+Version: 1.1.0
 Authors@R: c(
     person("Benjamin", "Renard", email = "benjamin.renard@inrae.fr",role = c("aut", "cre","cph"),comment = c(ORCID = "0000-0001-8447-5430")),
     person("INRAE", role = c("fnd")),
