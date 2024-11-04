@@ -82,7 +82,9 @@ Metropolis_OAAT_adaptive<-function(f,x0,sdjump,...,
   fx=matrix(NA,batch.n*batch.length,1)
   sdj=sdjump
   xini=x0
+  pb=progress::progress_bar$new(total=batch.n,format = "[:bar] :percent done, eta: :eta")
   for(i in 1:batch.n){
+    pb$tick()
     w<-Metropolis_OAAT(f=f,x0=xini,nsim=batch.length,sdjump=sdj,...)
     indx=( (i-1)*batch.length+1 ) : (i*batch.length) 
     x[indx,]=w$x

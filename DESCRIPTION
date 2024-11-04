@@ -22,7 +22,8 @@ Imports:
     graphics,
     evd,
     mvtnorm,
-    numDeriv
+    numDeriv,
+    progress
 RoxygenNote: 7.2.3
 Suggests: 
     knitr,
