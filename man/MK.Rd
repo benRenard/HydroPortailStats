@@ -2,7 +2,7 @@
 % Please edit documentation in R/Tests.R
 \name{MK}
 \alias{MK}
-\title{Mann-Kemdall Test}
+\title{Mann-Kendall Test}
 \usage{
 MK(y)
 }

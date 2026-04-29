@@ -117,7 +117,7 @@ KS<-function(y,dist,par){
   return(OUT)
 }
 
-#' Mann-Kemdall Test
+#' Mann-Kendall Test
 #'
 #' Applies the Mann-Kendall trend test
 #'
