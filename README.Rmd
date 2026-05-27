@@ -19,8 +19,8 @@ This R package contains the statistical functions used in the French [`HydroPort
 *Ce package R contient les fonctions statistiques utilisées par l'[`HydroPortail`](https://hydro.eaufrance.fr/). Ceci inclut des fonctions pour estimer les paramètres d'une distribution, calculer les courbes de quantiles et leur incertitude, et d'autres outils variés.*
 
 ```{r}
-install.packages('HydroPortailStats')  # Install the package from CRAN
-#devtools::install_github('benRenard/HydroPortailStats') # Install the development version from GitHub
+# install.packages('HydroPortailStats')  # Install the package from CRAN
+# devtools::install_github('benRenard/HydroPortailStats') # Install the development version from GitHub
 library(HydroPortailStats) # Load the package
 ```
 

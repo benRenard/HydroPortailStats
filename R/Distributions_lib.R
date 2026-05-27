@@ -73,6 +73,8 @@ GetParNumber<-function(dist){
   #^******************************************************************************
   Npar=switch(dist,
               FlatPrior=0,
+              'FlatPrior+'=0,
+              'FlatPrior-'=0,
               Uniform=2,
               Normal=2,
               LogNormal=2,
@@ -127,6 +129,8 @@ GetParName<-function(dist,lang='fr'){
   #^******************************************************************************
   name=switch(dist,
               FlatPrior="",
+              'FlatPrior+'="",
+              'FlatPrior-'="",
               Uniform=switch(lang,fr=c('borne_inf','borne_sup'),en=c('lower_bound','higher_bound'),NA), 
               Normal=switch(lang,fr=c('moyenne','ecart_type'),en=c('mean','standard_deviation'),NA),
               LogNormal=switch(lang,fr=c('moyenne_log','ecart_type_log'),en=c('mean_log','standard_deviation_log'),NA),
@@ -185,6 +189,8 @@ GetParFeas<-function(dist,par){
   
   feas=switch(dist,
               FlatPrior=TRUE,
+              'FlatPrior+'=TRUE,
+              'FlatPrior-'=TRUE,
               Uniform={if(par[2]<=par[1]){FALSE} else {TRUE}},
               Normal={if(par[2]<=0){FALSE} else {TRUE}},
               LogNormal={if(par[2]<=0){FALSE} else {TRUE}},
@@ -251,6 +257,8 @@ GetPdf<-function(y,dist,par,log=FALSE){
   
   pdf=switch(dist,
              FlatPrior=1,
+             'FlatPrior+'=ifelse(log,log(1*(y>0)),1*(y>0)),
+             'FlatPrior-'=ifelse(log,log(1*(y<0)),1*(y<0)),
              Uniform=stats::dunif(y,min=par[1],max=par[2],log=log),
              Normal=stats::dnorm(y,mean=par[1],sd=par[2],log=log),
              LogNormal=stats::dlnorm(y,meanlog=par[1],sdlog=par[2],log=log),

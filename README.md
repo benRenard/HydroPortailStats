@@ -16,8 +16,8 @@ fonctions pour estimer les paramètres d’une distribution, calculer les
 courbes de quantiles et leur incertitude, et d’autres outils variés.*
 
 ``` r
-install.packages('HydroPortailStats')  # Install the package from CRAN
-#devtools::install_github('benRenard/HydroPortailStats') # Install the development version from GitHub
+# install.packages('HydroPortailStats')  # Install the package from CRAN
+# devtools::install_github('benRenard/HydroPortailStats') # Install the development version from GitHub
 library(HydroPortailStats) # Load the package
 ```
 
@@ -44,7 +44,8 @@ names(distInfo)
     ##  [1] "Uniform"       "Normal"        "LogNormal"     "Gumbel"       
     ##  [5] "Exponential1"  "Exponential2"  "GEV"           "GPD2"         
     ##  [9] "GPD3"          "Poisson"       "PearsonIII"    "LogPearsonIII"
-    ## [13] "Gumbel_min"    "GEV_min"       "GEV_min_pos"   "FlatPrior"
+    ## [13] "Gumbel_min"    "GEV_min"       "GEV_min_pos"   "FlatPrior"    
+    ## [17] "FlatPrior+"    "FlatPrior-"    "Triangle"
 
 ``` r
 # information on e.g. the Generalized Extreme Value (GEV) distribution / Information sur la GEV (par exemple)
