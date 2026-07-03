@@ -486,6 +486,8 @@ Import_HBayConfig <- function(path){
 #'
 #' @param H3 list, resulting from a call to Hydro3_HBay()
 #' @param curve_color color, color used for quantile curve
+#' @param addPointsToIntervals logical. If FALSE, only intervals are shown for interval data.
+#'    If TRUE, a value randomly sampled within the interval is added as a point.
 #' @return nothing (just creates a plot)
 #' @examples
 #' set.seed(98765)
@@ -520,7 +522,7 @@ Import_HBayConfig <- function(path){
 #' HBay_Plot(H3)
 #' @importFrom graphics plot lines points legend
 #' @export
-HBay_Plot <- function(H3,curve_color='black'){
+HBay_Plot <- function(H3,curve_color='black',addPointsToIntervals=TRUE){
   mini=min(H3$quantile$IC.low)
   maxi=max(H3$quantile$IC.high)
   graphics::plot(H3$quantile$T,H3$quantile$q,type='l',lwd=2,ylim=c(mini,maxi),log='x',
@@ -530,10 +532,17 @@ HBay_Plot <- function(H3,curve_color='black'){
   graphics::segments(H3$empirical$T,H3$y[H3$ixEmpirical,1],
                      H3$empirical$T,H3$y[H3$ixEmpirical,2],
                      col=H3$SystErrorIndex[H3$ixEmpirical]+2)
-  graphics::points(H3$empirical$T,H3$empirical$y,
-                   pch=19,col=H3$SystErrorIndex[H3$ixEmpirical]+2)
-  graphics::legend('topleft',paste('Systematic error',0:max(H3$SystErrorIndex)),
-         pch=19,col = 2+(0:max(H3$SystErrorIndex)))
+  # Add points where requested
+  isInterval=H3$y[H3$ixEmpirical,2]-H3$y[H3$ixEmpirical,1]!=0
+  if(addPointsToIntervals){mask=rep(TRUE,length(isInterval))} else {mask=!isInterval}
+  if(sum(mask)>0){
+    graphics::points(H3$empirical$T[mask],H3$empirical$y[mask],
+                   pch=19,col=H3$SystErrorIndex[H3$ixEmpirical][mask]+2)
+  }
+  # Legend
+  if(any(H3$SystErrorIndex==0)){smin=0} else {smin=1}
+  graphics::legend('topleft',paste('Systematic error',smin:max(H3$SystErrorIndex)),
+         pch=19,col = 2+(smin:max(H3$SystErrorIndex)))
 }
 
 #****************************

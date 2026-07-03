@@ -4,12 +4,15 @@
 \alias{HBay_Plot}
 \title{HBay plot}
 \usage{
-HBay_Plot(H3, curve_color = "black")
+HBay_Plot(H3, curve_color = "black", addPointsToIntervals = TRUE)
 }
 \arguments{
 \item{H3}{list, resulting from a call to Hydro3_HBay()}
 
 \item{curve_color}{color, color used for quantile curve}
+
+\item{addPointsToIntervals}{logical. If FALSE, only intervals are shown for interval data.
+If TRUE, a value randomly sampled within the interval is added as a point.}
 }
 \value{
 nothing (just creates a plot)
