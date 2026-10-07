@@ -40,3 +40,40 @@ applyMovingStat <- function(x,window,stat=mean,...){
   }
   return(out)
 }
+
+#' Baseflow separation
+#'
+#' Apply the baseflow separation (BFS) algorithm described in
+#' Tallaksen and Van Lanenś book (2004):
+#' Hydrological Drought: Processes and Estimation Methods for Streamflow and Groundwater. Elsevier. 
+#'
+#' @param x numeric vector, values. 
+#' @param d integer, bloc size
+#' @param w numeric, smoothing parameter
+#' @examples
+#' x=rnorm(1001)
+#' bf=applyBFS(x)
+#' plot(x,type='l')
+#' lines(bf,col='red')
+#' @export
+#' @importFrom stats approx
+applyBFS <- function(x,d=5,w=0.9){
+  n=length(x)
+  ix=1:n
+  nr=floor(n/d)
+  M=matrix(x[1:(nr*d)],ncol=d,byrow=TRUE)
+  mins=apply(M,1,min)
+  imins=rep(NA,length(mins))
+  imins[!is.na(mins)]=apply(M[!is.na(mins),],1,which.min)
+  isPivot=rep(FALSE,n)
+  for(j in 2:(NROW(M)-1)){
+    if(!is.na(mins[j]+mins[j-1]+mins[j+1])){
+      if(w*mins[j]<min(mins[j-1],mins[j+1])){
+        isPivot[(j-1)*d+imins[j]]=TRUE
+      }
+    }
+  }
+  out=approx(x=ix[isPivot],y=x[isPivot],xout=1:n,na.rm=FALSE)
+  return(out$y)
+}
+
