@@ -77,3 +77,28 @@ applyBFS <- function(x,d=5,w=0.9){
   return(out$y)
 }
 
+#' Sequent Peak Algorithm (SPA)
+#'
+#' Apply the Sequent Peak Algorithm.
+#'
+#' @param x numeric vector, values. 
+#' @param threshold numeric vector, threshold
+#' @examples
+#' x=rnorm(100)
+#' spa=applySPA(x,-1)
+#' plot(x,type='l')
+#' lines(rep(-1,100),col='gray')
+#' lines(spa,col='red')
+#' @export
+#' @importFrom stats quantile
+applySPA <- function(x,threshold){
+  n=length(x)
+  if(length(threshold)==1){threshold=rep(threshold,n)}
+  out=rep(0,n)
+  for(j in 2:length(out)){
+    out[j]=out[j-1]+threshold[j]-x[j]
+    if(out[j]<0){out[j]=0}
+  }
+  return(out)
+}
+
