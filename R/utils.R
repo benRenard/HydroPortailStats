@@ -94,9 +94,11 @@ applyBFS <- function(x,d=5,w=0.9){
 applySPA <- function(x,threshold){
   n=length(x)
   if(length(threshold)==1){threshold=rep(threshold,n)}
-  out=rep(0,n)
+  out=rep(NA,n)
+  out[1]=0
   for(j in 2:length(out)){
     out[j]=out[j-1]+threshold[j]-x[j]
+    if(is.na(out[j])){return(out)}
     if(out[j]<0){out[j]=0}
   }
   return(out)
