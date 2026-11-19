@@ -29,9 +29,12 @@
 # Fonctions principales ----
 #****************************
 
+UnsupportedDists_HBay <- c('Poisson','Uniform',
+                           'FlatPrior','FlatPrior+','FlatPrior-','Triangle')
+
 #' Bayesian estimation using historical data
 #'
-#' Bayesian estimation of a GEV or Gumbel distribution based on a mixed sample containing 
+#' Bayesian estimation of a distribution based on a mixed sample containing 
 #' point (i.e. perfectly known) or interval (i.e. known to be within bounds) data.
 #' Systematic errors induced by rating curve errors can also be accounted for. 
 #' Returns MCMC samples from the posterior distribution.
@@ -104,8 +107,12 @@ GetEstimate_HBay<-function(y,dist,prior,
                            mult.down=0.9, mult.up=1.1){
   
   # Preliminary checks ----
-  if( !(dist %in% c('GEV','Gumbel')) ){
-    stop(paste0('Unsupported distribution: "',dist,'". Only "GEV" and "Gumbel" are allowed'))
+  if( is.na(GetParNumber(dist)) ){
+    stop(paste0('Unknown distribution: "',dist,'"'))
+  }
+  if( dist %in% UnsupportedDists_HBay ){
+    stop(paste0('Unsupported distribution: "',dist,'" (blacklisted: ',
+                paste(UnsupportedDists_HBay,collapse=', '),')'))
   }
   if( any(y[,1]>y[,2]) ){
     stop(paste0('Bounds inversion y[i,1]>y[i,2]: lower bound is larger than upper bound for at least one row in y'))
@@ -577,18 +584,18 @@ GetHBayLogPost<-function(par,y,dist,prior,SystErrorIndex,SystErrorPrior){
       z=matrix(y[indx,],ncol=2) # make sure this stays a 2-column matrix
       dt=dataType[indx]
       if(k==0) {g=1} else {g=gamma[k]}
-      distPar=c(theta[1]/g,theta[2]/g)
-      if(dist=='GEV'){distPar=c(distPar,theta[3])}
       # Perfectly-known data
       w=matrix(z[dt==0,],ncol=2)
       if(NROW(w)>0){
-        lkh=lkh+GetLogLikelihood(distPar,w[,1],dist)
+        lkh=lkh+GetLogLikelihood(theta,g*w[,1],dist)+NROW(w)*log(g)
       }
       # Interval data
       w=matrix(z[dt==1,],ncol=2)
       if(NROW(w)>0){
-        upper=sapply(w[,2],GetCdf,dist,distPar)
-        lower=sapply(w[,1],GetCdf,dist,distPar)
+        lo=g*w[,1]
+        if(dist %in% c('LogNormal','LogPearsonIII')){lo=pmax(lo,0)} # positive support
+        upper=sapply(g*w[,2],GetCdf,dist,theta)
+        lower=sapply(lo,GetCdf,dist,theta)
         lkh=lkh+sum(log(upper-lower))
       }
     }
